@@ -1,0 +1,11 @@
+namespace nan2.lobby;
+
+enum G_REQ : byte { REQ_JOIN = 0, REQ_OUT, REQ_JOIN_AC, REQ_JOIN_DN }
+
+table GroupReq {
+  req: G_REQ;
+  ntf_id: int;
+  user_tag: string;
+}
+
+root_type GroupReq;

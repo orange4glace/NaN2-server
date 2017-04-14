@@ -1,0 +1,7 @@
+namespace nan2.lobby;
+
+table JoinReq {
+  token: string;
+}
+
+root_type JoinReq;

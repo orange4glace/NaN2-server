@@ -1,0 +1,7 @@
+namespace nan2.login;
+
+table LoginReq {
+  uuid: string;
+}
+
+root_type LoginReq;

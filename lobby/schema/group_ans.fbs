@@ -1,0 +1,9 @@
+namespace nan2.lobby;
+
+enum G_ANS : byte { ANS_SUCC = 0, ANS_FAIL }
+
+table GroupAns {
+  ans: G_ANS;
+}
+
+root_type GroupAns;

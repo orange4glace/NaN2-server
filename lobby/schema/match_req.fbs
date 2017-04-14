@@ -1,0 +1,9 @@
+namespace nan2.lobby;
+
+enum M_MODE : byte { MODE_DEATH = 0 }
+
+table MatchReq {
+  mode: M_MODE;
+}
+
+root_type MatchReq;

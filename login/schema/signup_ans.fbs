@@ -1,0 +1,10 @@
+namespace nan2.login;
+
+enum S_ANS : byte { SUCC = 0, FAIL, FAIL_REGISTERED }
+
+table SignupAns {
+  ans: S_ANS;
+  user_tag: string;  
+}
+
+root_type SignupAns;

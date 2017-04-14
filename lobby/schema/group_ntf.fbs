@@ -1,0 +1,11 @@
+namespace nan2.lobby;
+
+enum G_NTF : byte { NTF_JOIN_RQ = 0, NTF_OUT, NTF_JOIN_NEW, NTF_JOIN_SC }
+
+table GroupNtf {
+  ntf: G_NTF;
+  ntf_id: short;
+  user_tags: [string];
+}
+
+root_type GroupNtf;

@@ -1,0 +1,11 @@
+namespace nan2.login;
+
+enum L_ANS : byte { SUCC = 0, FAIL, FAIL_UNREG, FAIL_LOGINED }
+
+table LoginAns{
+  ans: L_ANS;
+  user_tag: string;  
+  token: string;
+}
+
+root_type LoginAns;

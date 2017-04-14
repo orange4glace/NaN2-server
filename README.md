@@ -1,2 +1,2 @@
-# NaN2-server
-server of the NaN2
+# NaN2 server
+Game Servers for NaN2 the game

@@ -1,0 +1,9 @@
+namespace nan2.lobby;
+
+enum M_ANS : byte { ANS_SUCC = 0, ANS_FAIL }
+
+table MatchAns {
+  ans: M_ANS;
+}
+
+root_type MatchAns;

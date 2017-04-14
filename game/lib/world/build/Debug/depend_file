@@ -1,0 +1,114 @@
+build/Debug/src/world_time.o: src/world_time.cpp include/world_time.h
+build/Debug/src/math_helper.o: src/math_helper.cpp include/math_helper.h \
+  ../../include/nan2/math/vector2.h
+build/Debug/src/entity/updatable.o: src/entity/updatable.cpp \
+  include/entity/updatable.h include/entity/entity.h \
+  ../../include/nan2/math/vector2.h include/entity/../world_time.h \
+  include/world/world.h include/world/../global.h \
+  include/world/world_map.h ../../include/nan2/math/aabb.h \
+  ../../include/nan2/math/rect.h include/world/../entity/player.h \
+  include/entity/character.h include/entity/collider_interface.h \
+  include/entity/weapon.h include/entity/character_tick_data.h \
+  include/entity/../network/tick_packet.h
+build/Debug/src/entity/entity.o: src/entity/entity.cpp \
+  include/entity/entity.h ../../include/nan2/math/vector2.h \
+  include/world/world.h include/world/../global.h \
+  include/world/world_map.h ../../include/nan2/math/aabb.h \
+  ../../include/nan2/math/rect.h include/world/../entity/player.h \
+  include/entity/updatable.h include/entity/../world_time.h \
+  include/entity/character.h include/entity/collider_interface.h \
+  include/entity/weapon.h include/entity/character_tick_data.h \
+  include/entity/../network/tick_packet.h
+build/Debug/src/entity/bullet.o: src/entity/bullet.cpp \
+  include/entity/bullet.h include/entity/updatable.h \
+  include/entity/entity.h ../../include/nan2/math/vector2.h \
+  include/entity/../world_time.h include/entity/collider_interface.h \
+  ../../include/nan2/math/aabb.h ../../include/nan2/math/rect.h \
+  include/entity/character.h include/entity/weapon.h \
+  include/entity/character_tick_data.h \
+  include/entity/../network/tick_packet.h
+build/Debug/src/entity/character.o: src/entity/character.cpp \
+  include/entity/character.h include/entity/updatable.h \
+  include/entity/entity.h ../../include/nan2/math/vector2.h \
+  include/entity/../world_time.h include/entity/collider_interface.h \
+  ../../include/nan2/math/aabb.h ../../include/nan2/math/rect.h \
+  include/entity/weapon.h include/entity/character_tick_data.h \
+  include/entity/../network/tick_packet.h include/world/world.h \
+  include/world/../global.h include/world/world_map.h \
+  include/world/../entity/player.h include/math_helper.h
+build/Debug/src/entity/entity.o: src/entity/entity.cpp \
+  include/entity/entity.h ../../include/nan2/math/vector2.h \
+  include/world/world.h include/world/../global.h \
+  include/world/world_map.h ../../include/nan2/math/aabb.h \
+  ../../include/nan2/math/rect.h include/world/../entity/player.h \
+  include/entity/updatable.h include/entity/../world_time.h \
+  include/entity/character.h include/entity/collider_interface.h \
+  include/entity/weapon.h include/entity/character_tick_data.h \
+  include/entity/../network/tick_packet.h
+build/Debug/src/entity/machine_gun.o: src/entity/machine_gun.cpp \
+  include/entity/machine_gun.h include/entity/weapon.h \
+  include/entity/updatable.h include/entity/entity.h \
+  ../../include/nan2/math/vector2.h include/entity/../world_time.h \
+  include/entity/machine_gun_bullet.h include/entity/bullet.h \
+  include/entity/collider_interface.h ../../include/nan2/math/aabb.h \
+  ../../include/nan2/math/rect.h include/world/world.h \
+  include/world/../global.h include/world/world_map.h \
+  include/world/../entity/player.h include/entity/character.h \
+  include/entity/character_tick_data.h \
+  include/entity/../network/tick_packet.h
+build/Debug/src/entity/machine_gun_bullet.o: \
+  src/entity/machine_gun_bullet.cpp include/entity/machine_gun_bullet.h \
+  include/entity/bullet.h include/entity/updatable.h \
+  include/entity/entity.h ../../include/nan2/math/vector2.h \
+  include/entity/../world_time.h include/entity/collider_interface.h \
+  ../../include/nan2/math/aabb.h ../../include/nan2/math/rect.h \
+  include/entity/character.h include/entity/weapon.h \
+  include/entity/character_tick_data.h \
+  include/entity/../network/tick_packet.h include/world/world.h \
+  include/world/../global.h include/world/world_map.h \
+  include/world/../entity/player.h
+build/Debug/src/entity/weapon.o: src/entity/weapon.cpp \
+  include/entity/weapon.h include/entity/updatable.h \
+  include/entity/entity.h ../../include/nan2/math/vector2.h \
+  include/entity/../world_time.h include/entity/character.h \
+  include/entity/collider_interface.h ../../include/nan2/math/aabb.h \
+  ../../include/nan2/math/rect.h include/entity/character_tick_data.h \
+  include/entity/../network/tick_packet.h
+build/Debug/src/entity/player.o: src/entity/player.cpp \
+  include/entity/player.h include/entity/updatable.h \
+  include/entity/entity.h ../../include/nan2/math/vector2.h \
+  include/entity/../world_time.h include/entity/character.h \
+  include/entity/collider_interface.h ../../include/nan2/math/aabb.h \
+  ../../include/nan2/math/rect.h include/entity/weapon.h \
+  include/entity/character_tick_data.h \
+  include/entity/../network/tick_packet.h
+build/Debug/src/entity/character_tick_data.o: \
+  src/entity/character_tick_data.cpp \
+  include/entity/character_tick_data.h ../../include/nan2/math/aabb.h \
+  ../../include/nan2/math/rect.h ../../include/nan2/math/vector2.h \
+  include/entity/character.h include/entity/updatable.h \
+  include/entity/entity.h include/entity/../world_time.h \
+  include/entity/collider_interface.h include/entity/weapon.h \
+  include/entity/../network/tick_packet.h
+build/Debug/src/entity/collider_interface.o: \
+  src/entity/collider_interface.cpp include/entity/collider_interface.h \
+  ../../include/nan2/math/aabb.h ../../include/nan2/math/rect.h \
+  ../../include/nan2/math/vector2.h
+build/Debug/src/network/tick_packet.o: src/network/tick_packet.cpp \
+  include/network/tick_packet.h
+build/Debug/src/world/world.o: src/world/world.cpp include/world/world.h \
+  include/world/../global.h include/world/world_map.h \
+  ../../include/nan2/math/aabb.h ../../include/nan2/math/rect.h \
+  ../../include/nan2/math/vector2.h include/world/../entity/player.h \
+  include/world/../entity/updatable.h include/world/../entity/entity.h \
+  include/world/../entity/../world_time.h \
+  include/world/../entity/character.h \
+  include/world/../entity/collider_interface.h \
+  include/world/../entity/weapon.h \
+  include/world/../entity/character_tick_data.h \
+  include/world/../entity/../network/tick_packet.h
+build/Debug/src/world/world_map.o: src/world/world_map.cpp \
+  include/world/world_map.h ../../include/nan2/math/aabb.h \
+  ../../include/nan2/math/rect.h ../../include/nan2/math/vector2.h
+build/Debug/test/void_pointer_test.o: test/void_pointer_test.cpp \
+  ../../include/nan2/math/vector2.h ../../include/nan2/math/rect.h

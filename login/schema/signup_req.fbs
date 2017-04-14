@@ -1,0 +1,9 @@
+namespace nan2.login;
+
+table SignupReq {
+  uuid: string;
+  user_name: string;
+}
+
+root_type SignupReq;
+
