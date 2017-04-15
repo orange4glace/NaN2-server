@@ -4,7 +4,10 @@
 
 #include "../include/header.hpp"
 
-unordered_map<int, std::unique_ptr<nan2::User>> user_map; // session_id to user
+using namespace nan2;
+using namespace nan2::lobby;
+
+std::unordered_map<int, std::unique_ptr<model::User>> user_map;
 
 sql::Driver* driver;
 sql::Connection* mysql_con;
@@ -21,7 +24,22 @@ void send(int session_id, short packet_size, short packet_id,
 
 void packet_handler(mgne::Packet& p)
 {
-  // 접속의 경우 rating을 들고와서 저장..
+  char* buffer_pointer = p.GetPacketData()->data();
+  flatbuffers::FlatBufferBuilder builder(1024);
+
+  switch(p.GetPacketId())
+  {
+  case PACKET_JOIN_REQ: {
+    auto join_req = GetJoinReq(buffer_pointer);
+    std::string token = join_req->token()->str();
+    user_map[p.GetSessionId()] =
+      std::unique_ptr<model::User>(model::User::LoadUser(token, redis_client));
+    //
+
+    //
+    break;
+  }
+  }
 }
 
 int main()
