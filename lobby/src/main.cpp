@@ -8,6 +8,7 @@ using namespace nan2;
 using namespace nan2::lobby;
 
 std::unordered_map<int, std::unique_ptr<model::User>> user_map;
+// is unordered_map thread_safe? 
 
 sql::Driver* driver;
 sql::Connection* mysql_con;
@@ -30,13 +31,34 @@ void packet_handler(mgne::Packet& p)
   switch(p.GetPacketId())
   {
   case PACKET_JOIN_REQ: {
+    short state = -1;
     auto join_req = GetJoinReq(buffer_pointer);
     std::string token = join_req->token()->str();
-    user_map[p.GetSessionId()] =
-      std::unique_ptr<model::User>(model::User::LoadUser(token, redis_client));
-    //
+    model::User* tmp = model::User::LoadUser(token, redis_client);
 
+    if (tmp != nullptr) {
+      state = 1;
+      user_map[p.GetSessionId()] = std::unique_ptr<model::User>(tmp);
+    }
+    // print for debugging
+    std::cout << "User joined!\n";
+    std::cout << "User id  : " << user_map[p.GetSessionId()]->GetUserId() <<
+      std::endl;
+    std::cout << "User tag : " << user_map[p.GetSessionId()]->GetUserTag() <<
+      std::endl;
+    std::cout << "User RD  : " << user_map[p.GetSessionId()]->GetRatingDeath();
+    std::cout << std::endl;
     //
+    switch (state) {
+    case -1: {
+
+      break;
+    }
+    case 1: {
+
+      break;
+    }
+    }
     break;
   }
   }
