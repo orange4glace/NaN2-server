@@ -1,10 +1,10 @@
 namespace nan2.lobby;
 
-enum G_NTF : byte { NTF_JOIN_RQ = 0, NTF_OUT, NTF_JOIN_NEW, NTF_JOIN_SC }
+enum G_NTF : byte { JOIN = 0, JOIN_RQ, JOIN_NEW, JOIN_SC, OUT }
 
 table GroupNtf {
   ntf: G_NTF;
-  ntf_id: short;
+  ntf_id: int;
   user_tags: [string];
 }
 

@@ -1,6 +1,6 @@
 namespace nan2.lobby;
 
-enum M_NTF : byte { NTF_MATCHED = 0, NTF_FAIL }
+enum M_NTF : byte { MATCHED = 0, FAIL }
 
 table MatchNtf {
   ntf: M_NTF;

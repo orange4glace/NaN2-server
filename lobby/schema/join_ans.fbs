@@ -1,6 +1,6 @@
 namespace nan2.lobby;
 
-enum J_ANS : byte { ANS_SUCC = 0, ANS_FAIL, ANS_FAIL_UNAUTH }
+enum J_ANS : byte { SUCC = 0, FAIL, FAIL_UNAUTH }
 
 table JoinAns {
   ans: J_ANS;

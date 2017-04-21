@@ -12,16 +12,16 @@ namespace lobby {
 struct MatchAns;
 
 enum M_ANS {
-  M_ANS_ANS_SUCC = 0,
-  M_ANS_ANS_FAIL = 1,
-  M_ANS_MIN = M_ANS_ANS_SUCC,
-  M_ANS_MAX = M_ANS_ANS_FAIL
+  M_ANS_SUCC = 0,
+  M_ANS_FAIL = 1,
+  M_ANS_MIN = M_ANS_SUCC,
+  M_ANS_MAX = M_ANS_FAIL
 };
 
 inline const char **EnumNamesM_ANS() {
   static const char *names[] = {
-    "ANS_SUCC",
-    "ANS_FAIL",
+    "SUCC",
+    "FAIL",
     nullptr
   };
   return names;
@@ -66,7 +66,7 @@ struct MatchAnsBuilder {
 
 inline flatbuffers::Offset<MatchAns> CreateMatchAns(
     flatbuffers::FlatBufferBuilder &_fbb,
-    M_ANS ans = M_ANS_ANS_SUCC) {
+    M_ANS ans = M_ANS_SUCC) {
   MatchAnsBuilder builder_(_fbb);
   builder_.add_ans(ans);
   return builder_.Finish();

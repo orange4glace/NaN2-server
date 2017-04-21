@@ -12,14 +12,14 @@ namespace lobby {
 struct MatchReq;
 
 enum M_MODE {
-  M_MODE_MODE_DEATH = 0,
-  M_MODE_MIN = M_MODE_MODE_DEATH,
-  M_MODE_MAX = M_MODE_MODE_DEATH
+  M_MODE_DEATH = 0,
+  M_MODE_MIN = M_MODE_DEATH,
+  M_MODE_MAX = M_MODE_DEATH
 };
 
 inline const char **EnumNamesM_MODE() {
   static const char *names[] = {
-    "MODE_DEATH",
+    "DEATH",
     nullptr
   };
   return names;
@@ -64,7 +64,7 @@ struct MatchReqBuilder {
 
 inline flatbuffers::Offset<MatchReq> CreateMatchReq(
     flatbuffers::FlatBufferBuilder &_fbb,
-    M_MODE mode = M_MODE_MODE_DEATH) {
+    M_MODE mode = M_MODE_DEATH) {
   MatchReqBuilder builder_(_fbb);
   builder_.add_mode(mode);
   return builder_.Finish();

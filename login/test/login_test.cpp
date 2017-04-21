@@ -27,8 +27,6 @@ int main()
   flatbuffers::FlatBufferBuilder builder(1024);
 
   std::string uuid_str = "550e8400-e29b-41d4-a716-446655477244";
-  // "550e8400-e29b-41d4-a716-446655425566"; 
-  //"550e8400-e29b-41d4-a716-446655462896";
   auto uuid = builder.CreateString(uuid_str);
   auto login_req = CreateLoginReq(builder, uuid);
   builder.Finish(login_req);

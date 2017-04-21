@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <memory>
 #include <unordered_map>
 
 #include <mgne/mgne.hpp>
@@ -24,6 +25,7 @@
 
 #include "../../include/models/user.hpp"
 
+#include "group.hpp"
 #include "protocol.hpp"
 
 // -- FlatB --

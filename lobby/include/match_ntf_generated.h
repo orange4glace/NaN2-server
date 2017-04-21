@@ -12,16 +12,16 @@ namespace lobby {
 struct MatchNtf;
 
 enum M_NTF {
-  M_NTF_NTF_MATCHED = 0,
-  M_NTF_NTF_FAIL = 1,
-  M_NTF_MIN = M_NTF_NTF_MATCHED,
-  M_NTF_MAX = M_NTF_NTF_FAIL
+  M_NTF_MATCHED = 0,
+  M_NTF_FAIL = 1,
+  M_NTF_MIN = M_NTF_MATCHED,
+  M_NTF_MAX = M_NTF_FAIL
 };
 
 inline const char **EnumNamesM_NTF() {
   static const char *names[] = {
-    "NTF_MATCHED",
-    "NTF_FAIL",
+    "MATCHED",
+    "FAIL",
     nullptr
   };
   return names;
@@ -66,7 +66,7 @@ struct MatchNtfBuilder {
 
 inline flatbuffers::Offset<MatchNtf> CreateMatchNtf(
     flatbuffers::FlatBufferBuilder &_fbb,
-    M_NTF ntf = M_NTF_NTF_MATCHED) {
+    M_NTF ntf = M_NTF_MATCHED) {
   MatchNtfBuilder builder_(_fbb);
   builder_.add_ntf(ntf);
   return builder_.Finish();

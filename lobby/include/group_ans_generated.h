@@ -12,16 +12,16 @@ namespace lobby {
 struct GroupAns;
 
 enum G_ANS {
-  G_ANS_ANS_SUCC = 0,
-  G_ANS_ANS_FAIL = 1,
-  G_ANS_MIN = G_ANS_ANS_SUCC,
-  G_ANS_MAX = G_ANS_ANS_FAIL
+  G_ANS_SUCC = 0,
+  G_ANS_FAIL = 1,
+  G_ANS_MIN = G_ANS_SUCC,
+  G_ANS_MAX = G_ANS_FAIL
 };
 
 inline const char **EnumNamesG_ANS() {
   static const char *names[] = {
-    "ANS_SUCC",
-    "ANS_FAIL",
+    "SUCC",
+    "FAIL",
     nullptr
   };
   return names;
@@ -66,7 +66,7 @@ struct GroupAnsBuilder {
 
 inline flatbuffers::Offset<GroupAns> CreateGroupAns(
     flatbuffers::FlatBufferBuilder &_fbb,
-    G_ANS ans = G_ANS_ANS_SUCC) {
+    G_ANS ans = G_ANS_SUCC) {
   GroupAnsBuilder builder_(_fbb);
   builder_.add_ans(ans);
   return builder_.Finish();

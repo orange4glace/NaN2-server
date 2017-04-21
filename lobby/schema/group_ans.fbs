@@ -1,6 +1,6 @@
 namespace nan2.lobby;
 
-enum G_ANS : byte { ANS_SUCC = 0, ANS_FAIL }
+enum G_ANS : byte { SUCC = 0, FAIL }
 
 table GroupAns {
   ans: G_ANS;

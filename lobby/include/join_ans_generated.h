@@ -12,18 +12,18 @@ namespace lobby {
 struct JoinAns;
 
 enum J_ANS {
-  J_ANS_ANS_SUCC = 0,
-  J_ANS_ANS_FAIL = 1,
-  J_ANS_ANS_FAIL_UNAUTH = 2,
-  J_ANS_MIN = J_ANS_ANS_SUCC,
-  J_ANS_MAX = J_ANS_ANS_FAIL_UNAUTH
+  J_ANS_SUCC = 0,
+  J_ANS_FAIL = 1,
+  J_ANS_FAIL_UNAUTH = 2,
+  J_ANS_MIN = J_ANS_SUCC,
+  J_ANS_MAX = J_ANS_FAIL_UNAUTH
 };
 
 inline const char **EnumNamesJ_ANS() {
   static const char *names[] = {
-    "ANS_SUCC",
-    "ANS_FAIL",
-    "ANS_FAIL_UNAUTH",
+    "SUCC",
+    "FAIL",
+    "FAIL_UNAUTH",
     nullptr
   };
   return names;
@@ -68,7 +68,7 @@ struct JoinAnsBuilder {
 
 inline flatbuffers::Offset<JoinAns> CreateJoinAns(
     flatbuffers::FlatBufferBuilder &_fbb,
-    J_ANS ans = J_ANS_ANS_SUCC) {
+    J_ANS ans = J_ANS_SUCC) {
   JoinAnsBuilder builder_(_fbb);
   builder_.add_ans(ans);
   return builder_.Finish();

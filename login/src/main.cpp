@@ -47,8 +47,7 @@ int add_user(std::string& uuid, std::string& user_name,
     boost::scoped_ptr<sql::ResultSet> result(statement->executeQuery(query));
   
     if (!result->rowsCount()) { // no duplication
-      model::User tmp;
-      model::User::CreateUser(uuid, user_tag, mysql_con, tmp); return tmp.GetUserId();
+      return model::User::CreateUser(uuid, user_tag, mysql_con);
     }
 
     if (count == 100) break;

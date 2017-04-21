@@ -1,6 +1,6 @@
 namespace nan2.lobby;
 
-enum M_ANS : byte { ANS_SUCC = 0, ANS_FAIL }
+enum M_ANS : byte { SUCC = 0, FAIL }
 
 table MatchAns {
   ans: M_ANS;

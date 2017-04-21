@@ -12,20 +12,20 @@ namespace lobby {
 struct GroupReq;
 
 enum G_REQ {
-  G_REQ_REQ_JOIN = 0,
-  G_REQ_REQ_OUT = 1,
-  G_REQ_REQ_JOIN_AC = 2,
-  G_REQ_REQ_JOIN_DN = 3,
-  G_REQ_MIN = G_REQ_REQ_JOIN,
-  G_REQ_MAX = G_REQ_REQ_JOIN_DN
+  G_REQ_JOIN = 0,
+  G_REQ_OUT = 1,
+  G_REQ_JOIN_AC = 2,
+  G_REQ_JOIN_DN = 3,
+  G_REQ_MIN = G_REQ_JOIN,
+  G_REQ_MAX = G_REQ_JOIN_DN
 };
 
 inline const char **EnumNamesG_REQ() {
   static const char *names[] = {
-    "REQ_JOIN",
-    "REQ_OUT",
-    "REQ_JOIN_AC",
-    "REQ_JOIN_DN",
+    "JOIN",
+    "OUT",
+    "JOIN_AC",
+    "JOIN_DN",
     nullptr
   };
   return names;
@@ -87,7 +87,7 @@ struct GroupReqBuilder {
 
 inline flatbuffers::Offset<GroupReq> CreateGroupReq(
     flatbuffers::FlatBufferBuilder &_fbb,
-    G_REQ req = G_REQ_REQ_JOIN,
+    G_REQ req = G_REQ_JOIN,
     int32_t ntf_id = 0,
     flatbuffers::Offset<flatbuffers::String> user_tag = 0) {
   GroupReqBuilder builder_(_fbb);
@@ -99,7 +99,7 @@ inline flatbuffers::Offset<GroupReq> CreateGroupReq(
 
 inline flatbuffers::Offset<GroupReq> CreateGroupReqDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    G_REQ req = G_REQ_REQ_JOIN,
+    G_REQ req = G_REQ_JOIN,
     int32_t ntf_id = 0,
     const char *user_tag = nullptr) {
   return nan2::lobby::CreateGroupReq(

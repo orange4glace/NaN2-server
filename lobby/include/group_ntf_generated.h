@@ -12,20 +12,22 @@ namespace lobby {
 struct GroupNtf;
 
 enum G_NTF {
-  G_NTF_NTF_JOIN_RQ = 0,
-  G_NTF_NTF_OUT = 1,
-  G_NTF_NTF_JOIN_NEW = 2,
-  G_NTF_NTF_JOIN_SC = 3,
-  G_NTF_MIN = G_NTF_NTF_JOIN_RQ,
-  G_NTF_MAX = G_NTF_NTF_JOIN_SC
+  G_NTF_JOIN = 0,
+  G_NTF_JOIN_RQ = 1,
+  G_NTF_JOIN_NEW = 2,
+  G_NTF_JOIN_SC = 3,
+  G_NTF_OUT = 4,
+  G_NTF_MIN = G_NTF_JOIN,
+  G_NTF_MAX = G_NTF_OUT
 };
 
 inline const char **EnumNamesG_NTF() {
   static const char *names[] = {
-    "NTF_JOIN_RQ",
-    "NTF_OUT",
-    "NTF_JOIN_NEW",
-    "NTF_JOIN_SC",
+    "JOIN",
+    "JOIN_RQ",
+    "JOIN_NEW",
+    "JOIN_SC",
+    "OUT",
     nullptr
   };
   return names;
@@ -45,8 +47,8 @@ struct GroupNtf FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   G_NTF ntf() const {
     return static_cast<G_NTF>(GetField<int8_t>(VT_NTF, 0));
   }
-  int16_t ntf_id() const {
-    return GetField<int16_t>(VT_NTF_ID, 0);
+  int32_t ntf_id() const {
+    return GetField<int32_t>(VT_NTF_ID, 0);
   }
   const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *user_tags() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_USER_TAGS);
@@ -54,7 +56,7 @@ struct GroupNtf FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int8_t>(verifier, VT_NTF) &&
-           VerifyField<int16_t>(verifier, VT_NTF_ID) &&
+           VerifyField<int32_t>(verifier, VT_NTF_ID) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_USER_TAGS) &&
            verifier.Verify(user_tags()) &&
            verifier.VerifyVectorOfStrings(user_tags()) &&
@@ -68,8 +70,8 @@ struct GroupNtfBuilder {
   void add_ntf(G_NTF ntf) {
     fbb_.AddElement<int8_t>(GroupNtf::VT_NTF, static_cast<int8_t>(ntf), 0);
   }
-  void add_ntf_id(int16_t ntf_id) {
-    fbb_.AddElement<int16_t>(GroupNtf::VT_NTF_ID, ntf_id, 0);
+  void add_ntf_id(int32_t ntf_id) {
+    fbb_.AddElement<int32_t>(GroupNtf::VT_NTF_ID, ntf_id, 0);
   }
   void add_user_tags(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> user_tags) {
     fbb_.AddOffset(GroupNtf::VT_USER_TAGS, user_tags);
@@ -88,8 +90,8 @@ struct GroupNtfBuilder {
 
 inline flatbuffers::Offset<GroupNtf> CreateGroupNtf(
     flatbuffers::FlatBufferBuilder &_fbb,
-    G_NTF ntf = G_NTF_NTF_JOIN_RQ,
-    int16_t ntf_id = 0,
+    G_NTF ntf = G_NTF_JOIN,
+    int32_t ntf_id = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> user_tags = 0) {
   GroupNtfBuilder builder_(_fbb);
   builder_.add_user_tags(user_tags);
@@ -100,8 +102,8 @@ inline flatbuffers::Offset<GroupNtf> CreateGroupNtf(
 
 inline flatbuffers::Offset<GroupNtf> CreateGroupNtfDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    G_NTF ntf = G_NTF_NTF_JOIN_RQ,
-    int16_t ntf_id = 0,
+    G_NTF ntf = G_NTF_JOIN,
+    int32_t ntf_id = 0,
     const std::vector<flatbuffers::Offset<flatbuffers::String>> *user_tags = nullptr) {
   return nan2::lobby::CreateGroupNtf(
       _fbb,
