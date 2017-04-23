@@ -11,7 +11,7 @@ using namespace nan2::lobby;
 
 std::array<std::unique_ptr<model::User>, MAX_CAPACITY + 1> users;
 std::array<std::shared_ptr<Group>, MAX_CAPACITY + 1> groups;
-std::array<int, MAX_CAPACITY + 1> join_req;
+std::array<int, MAX_CAPACITY + 1> join_reqs;
 
 int req_count = 0;
 
@@ -56,6 +56,7 @@ void packet_handler(mgne::Packet& p)
       state = 1;
       users[session_id] = std::unique_ptr<model::User>(tmp);
       groups[session_id] = std::make_shared<Group>(session_id);
+      join_reqs[session_id] = 0;
     }
     switch (state) {
     case -1: {
@@ -80,6 +81,7 @@ void packet_handler(mgne::Packet& p)
     }
 
     flatbuffers::FlatBufferBuilder builder_ntf(1024);
+    flatbuffers::FlatBufferBuilder builder_ntf2(1024);
     short state = -1;
     auto group_req = GetGroupReq(buffer_pointer);
     char req = group_req->req(); 
@@ -88,8 +90,8 @@ void packet_handler(mgne::Packet& p)
     case G_REQ_JOIN: {
       std::string user_tag = group_req->user_tag()->str();
       int to_id = find_session_id(user_tag);
-      if (to_id != -1 && join_req[session_id] == 0) {
-        join_req[session_id] = to_id;
+      if (to_id != -1) { // TODO : check current group
+        join_reqs[session_id] = to_id;
         state = 1;
       }
 
@@ -130,12 +132,10 @@ void packet_handler(mgne::Packet& p)
       groups[session_id] = std::make_shared<Group>(session_id);
       
       auto group_ans = CreateGroupAns(builder, G_ANS_SUCC);
-      builder.Finish(group_ans);
-      auto user_tag = builder_ntf.CreateString(user->GetUserTag());
       std::vector<flatbuffers::Offset<flatbuffers::String>> user_tags_(1);
-      user_tags_[0] = user_tag;
+      user_tags_[0] = builder_ntf.CreateString(user->GetUserTag());
       auto user_tags = builder.CreateVector(user_tags_);
-      auto group_ntf = CreateGroupNtf(builder, G_NTF_JOIN, 0, user_tags);
+      auto group_ntf = CreateGroupNtf(builder_ntf, G_NTF_OUT, 0, user_tags);
       builder.Finish(group_ans);
       builder_ntf.Finish(group_ntf);
 
@@ -148,13 +148,59 @@ void packet_handler(mgne::Packet& p)
       break;
     }
     case G_REQ_JOIN_AC: {
-      int session_id = group_req->ntf_id();
+      std::vector<int> sessions;
+      int to_id = group_req->ntf_id();
+      bool tmp;
+
+      groups[session_id]->Lock();
+      groups[session_id]->GetSessions(sessions);
+      tmp = groups[session_id]->Join(to_id);
+      groups[session_id]->Unlock();
+
+      if (tmp && join_reqs[to_id] == session_id) state = 1;
+      // TODO check does he have any group
+
+      if (state == 1) {
+        auto group_ans = CreateGroupAns(builder, G_ANS_SUCC); 
+        std::vector<flatbuffers::Offset<flatbuffers::String>> user_tags_(1);
+        user_tags_[0] = builder_ntf.CreateString(users[to_id]->GetUserTag());
+        auto user_tags = builder.CreateVector(user_tags_);
+        auto group_ntf = CreateGroupNtf(builder_ntf, G_NTF_JOIN_NEW, 0,
+          user_tags);
+        user_tags_.clear();
+        for (auto id : sessions) 
+          user_tags_.push_back(
+            builder_ntf2.CreateString(users[id]->GetUserTag())
+          );
+        auto user_tags_full = builder_ntf2.CreateVector(user_tags_); 
+        auto group_ntf2 = CreateGroupNtf(builder_ntf2, G_NTF_JOIN_SC, 0,
+          user_tags_full);
+        builder.Finish(group_ans);
+        builder_ntf.Finish(group_ntf);
+        builder_ntf2.Finish(group_ntf2);
+      } else {
+        auto group_ans = CreateGroupAns(builder, G_ANS_FAIL);
+        builder.Finish(group_ans);
+      }
+      
+      if (state == 1) {
+        for (auto id : sessions) {
+          send(id, builder_ntf.GetSize(), PACKET_GROUP_NTF,
+            (char*)builder_ntf.GetBufferPointer());
+        }
+        send(to_id, builder_ntf2.GetSize(), PACKET_GROUP_NTF,
+          (char*)builder_ntf2.GetBufferPointer());
+      }
+      send(session_id, builder.GetSize(), PACKET_GROUP_ANS,
+        (char*)builder.GetBufferPointer());
+
       break;
     }
     case G_REQ_JOIN_DN: {
-      int session_id = group_req->ntf_id();
+      // Don't need to implement
       break;
     }
+
     }
     break;
   }
