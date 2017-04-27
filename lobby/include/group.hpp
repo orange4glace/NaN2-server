@@ -18,6 +18,13 @@ public:
     : leader_(session_id)
   {
   }
+  Group(Group& g1, Group& g2)
+    : leader_(g1.leader_)
+    , members_(g1.members_.size() + g2.members_.size())
+  {
+    members_.insert(members_.end(), g1.members_.begin(), g1.members_.end());
+    members_.insert(members_.end(), g2.members_.begin(), g2.members_.end());
+  }
   ~Group() { }
 
   bool Join(int session_id)
@@ -45,21 +52,16 @@ public:
     for (auto id : members_) sessions.push_back(id);
   }
 
-  int GetLeader()
-  {
-    return leader_;
-  }
-
-  int GetSize()
-  {
-    return 1 + members_.size();
-  }
-
+  int GetLeader() { return leader_; }
+  int GetSize() { return 1 + members_.size(); }
+  void SetDeathRating(short rating) { death_rating_ = rating; }
+  short GetDeathRating() { return death_rating_; }
   void Lock() { Lock(); }
   void Unlock() { Unlock(); }
 
 private:
   int leader_;
+  short death_rating_;
   std::vector<int> members_;
 };
 }

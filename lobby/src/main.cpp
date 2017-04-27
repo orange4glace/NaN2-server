@@ -4,7 +4,8 @@
 
 #include "../include/header.hpp"
 
-#define MAX_CAPACITY 1000
+#define MAX_CAPACITY     1000
+#define FIND_MATCH_INTERVAL 5
 
 using namespace nan2;
 using namespace nan2::lobby;
@@ -13,12 +14,24 @@ std::array<std::unique_ptr<model::User>, MAX_CAPACITY + 1> users;
 std::array<std::shared_ptr<Group>, MAX_CAPACITY + 1> groups;
 std::array<int, MAX_CAPACITY + 1> join_reqs;
 
-int req_count = 0;
+GameMatchingQueue game_matching_queue;
+
+boost::asio::io_service match_service;
+boost::asio::deadline_timer match_timer(match_service);
 
 sql::Driver* driver;
 sql::Connection* mysql_con;
 cpp_redis::redis_client redis_client;
 mgne::tcp::Server* server;
+
+int req_count = 0;
+
+void match(const boost::system::error_code& error)
+{
+  game_matching_queue.FindMatch();
+  match_timer.expires_from_now(boost::posix_time::seconds(FIND_MATCH_INTERVAL));
+  match_timer.async_wait(boost::bind(match, boost::asio::placeholders::error));
+}
 
 int find_session_id(std::string& user_tag)
 {
@@ -245,7 +258,10 @@ int main()
 
   boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), 4000);
   server = new mgne::tcp::Server(endpoint, MAX_CAPACITY, 3, 3, packet_handler);
-  server->Run();
+  server->RunNonBlock();
 
+  match_timer.expires_from_now(boost::posix_time::seconds(FIND_MATCH_INTERVAL));
+  match_timer.async_wait(boost::bind(match, boost::asio::placeholders::error));
+  match_service.run();
   return 0;
 }
