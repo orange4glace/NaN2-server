@@ -27,6 +27,7 @@ namespace nan2 {
 
     virtual void Destroy();
     virtual void Update() {};
+    virtual void FixedUpdate() {};
     const int update_order() const;
     Updatable& set_is_on_stage(bool v);
     const bool is_on_stage() const;

@@ -13,6 +13,7 @@ namespace nan2 {
     int time_;
     Vector2 position_;
     AABB collider_;
+    unsigned char fire_dir_;
     bool is_alive_;
 
   public:

@@ -6,7 +6,9 @@
 #include "collider_interface.h"
 #include "weapon.h"
 #include "character_tick_data.h"
-#include "../network/tick_packet.h"
+#include "../network/player_input_packet.h"
+#include "../network/character_snapshot.h"
+#include "../network/bullet_packet.h"
 
 #include <nan2/math/vector2.h>
 
@@ -41,9 +43,10 @@ namespace nan2 {
     Weapon* weapon_;
 
     std::deque<CharacterTickData> history_;
-    std::deque<TickPacket> packets_;
+    std::deque<PlayerInputPacket> packets_;
+    CharacterSnapshot snapshot_;
 
-    void SaveTickData();
+    void SaveTickData(const CharacterTickData& tick_data);
 
   public:
 
@@ -55,15 +58,17 @@ namespace nan2 {
     virtual const AABB collider() const;
 
     // Fire weapon
-    void Fire(const Vector2& angle) const;
+    bool Fire(unsigned char dir) const;
     void Dash(const Vector2& angle);
     void Update();
+    void FixedUpdate();
     void Move256(unsigned char dir, float time);
     void Move(float dx, float dy);
     void MoveTo(float x, float y);
 
     const Player& player() const;
     const Vector2& position() const;
+    CharacterSnapshot& snapshot();
     void set_position(float x, float y);
     void set_position(const Vector2& v);
     void set_weapon(Weapon* weapon);

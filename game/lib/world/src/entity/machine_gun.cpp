@@ -16,9 +16,10 @@ namespace nan2 {
     Weapon::Update();
   }
 
-  void MachineGun::Fire(const Vector2& angle) {
+  bool MachineGun::Fire(const Vector2& angle) {
     Bullet* bullet = new MachineGunBullet(world_, character_->position() + firing_point_, angle, 0);
     world_->AddUpdatable(bullet);
+    return true;
   }
   
 }

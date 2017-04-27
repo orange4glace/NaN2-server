@@ -30,15 +30,14 @@ namespace nan2 {
     return AABB(Rect(position_.x(), position_.y(), Character::COLLIDER_SIZE_.x(), Character::COLLIDER_SIZE_.y()));
   }
 
-  void Character::SaveTickData() {
-    int time = Time::current_time();
-    CharacterTickData tickData(time, position_, true);
-    history_.push_back(tickData);
+  void Character::SaveTickData(const CharacterTickData& tick_data) {
+    history_.push_back(tick_data);
   }
 
-  void Character::Fire(const Vector2& angle) const {
-    if (weapon_ == nullptr) return;
-    weapon_->Fire(angle);
+  bool Character::Fire(unsigned char dir) const {
+    if (weapon_ == nullptr) return false;
+    Vector2 angle = MathHelper::instance().normal_dir_256(dir);
+    return weapon_->Fire(angle);
   }
 
   void Character::Dash(const Vector2& angle) {
@@ -48,10 +47,27 @@ namespace nan2 {
   }
 
   void Character::Update() {
-    float given_time = Time::delta_time();
+  }
+
+  void Character::FixedUpdate() {
+    float dt = Time::fixed_delta_time();
+    snapshot_.Update(dt);
+    float given_time = dt;
     while (packets_.empty()) {
-      TickPacket packet = packets_.front();
+      PlayerInputPacket packet = packets_.front();
+      bool is_fresh = !packet.is_consuming();
       given_time = packet.Consume(given_time);
+
+      // Consume packet
+      if (is_fresh) {
+        bool fired = Fire(packet.fire_dir());
+        if (fired) {
+          BulletPacket bullet_packet(0, position_, packet.fire_dir());
+          snapshot_.AddBulletPacket(bullet_packet);
+        }
+      }
+      Move256(packet.move_dir(), packet.time());
+
       if (given_time == 0) break;
       else packets_.pop_front();
     }
@@ -65,7 +81,10 @@ namespace nan2 {
         dashing_ = false;
       }
     }
-    SaveTickData();
+    snapshot_.SetPosition(position_);
+    snapshot_.SetDashingDuration(0);
+    CharacterTickData tickData(Time::current_fixed_time(), position_, true);
+    SaveTickData(tickData);
   }
 
   void Character::Move256(unsigned char dir, float time) {
@@ -92,6 +111,10 @@ namespace nan2 {
 
   const Vector2& Character::position() const {
     return position_;
+  }
+
+  CharacterSnapshot& Character::snapshot() {
+    return snapshot_;
   }
 
   void Character::set_position(float x, float y) {

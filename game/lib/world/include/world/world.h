@@ -10,6 +10,9 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <ratio>
+#include <ctime>
+#include <chrono>
 
 namespace nan2 {
 
@@ -23,6 +26,8 @@ namespace nan2 {
 
   private:
 
+    std::chrono::high_resolution_clock::time_point last_system_time_;
+
     // Static World Map data
     WorldMap *world_map_;
     std::map<int, Player*> players_;
@@ -35,6 +40,8 @@ namespace nan2 {
     void StagingUpdatables();
     void DestroyUpdatables();
 
+    void TakeSnapshot();
+
   public:
 
     World();
@@ -44,6 +51,7 @@ namespace nan2 {
     const WorldMap& world_map() const;
 
     void Update();
+    void FixedUpdate();
 
     // Add updatable object to updatable set
     // Object having smaller update order will be updated first

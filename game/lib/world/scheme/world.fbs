@@ -1,0 +1,9 @@
+include "player.fbs";
+
+namespace nan2.game.world;
+
+table World {
+  players:[Player];
+}
+
+root_type World;

@@ -34,7 +34,7 @@ namespace nan2 {
 
     void Update();
     // Fire weapon
-    virtual void Fire(const Vector2& angle) = 0;
+    virtual bool Fire(const Vector2& angle) = 0;
 
 
   };
