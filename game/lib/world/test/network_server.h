@@ -24,9 +24,9 @@ public:
     bool HasMessages();
     ClientMessage PopMessage();
 
-    void SendToClient(std::string message, uint64_t clientID, bool guaranteed = false);
-    void SendToAllExcept(std::string message, uint64_t clientID, bool guaranteed = false);
-    void SendToAll(std::string message, bool guaranteed = false);
+    void SendToClient(uint8_t* message, unsigned int size, uint64_t clientID, bool guaranteed = false);
+    void SendToAllExcept(uint8_t* message, unsigned int size, uint64_t clientID, bool guaranteed = false);
+    void SendToAll(uint8_t* message, unsigned int size, bool guaranteed = false);
 
     inline uint64_t GetStatReceivedMessages() {return receivedMessages;};
     inline uint64_t GetStatReceivedBytes()    {return receivedBytes;};
@@ -48,7 +48,7 @@ private:
     void run_service();
     uint64_t get_client_id(udp::endpoint endpoint);
 
-    void send(std::string pmessage, udp::endpoint target_endpoint);
+    void send(boost::array<uint8_t, 1024>& pmessage, udp::endpoint target_endpoint);
 
     // Incoming messages queue
     locked_queue<ClientMessage> incomingMessages;

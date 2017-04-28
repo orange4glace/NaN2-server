@@ -1,15 +1,15 @@
-#define _WIN32_WINNT 0x0501
 #include <boost/bind.hpp>
 
-#include "NetworkServer.h"
-#include "Logging.h"
+#include "network_server.h"
+
+#include <iostream>
 
 NetworkServer::NetworkServer(unsigned short local_port) :
     socket(io_service, udp::endpoint(udp::v4(), local_port)),
     nextClientID(0L),
     service_thread(std::bind(&NetworkServer::run_service, this))
 {
-    LogMessage("Starting server on port", local_port);
+    std::cout << "Starting server on port " << local_port << std::endl;
 };
 
 NetworkServer::~NetworkServer()
@@ -36,24 +36,24 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
             receivedMessages++;
         }
         catch (std::exception ex) {
-            LogMessage("handle_receive: Error parsing incoming message:",ex.what());
+            std::cout << "handle_receive: Error parsing incoming message:" << ex.what() << std::endl;
         }
         catch (...) {
-            LogMessage("handle_receive: Unknown error while parsing incoming message");
+            std::cout << "handle_receive: Unknown error while parsing incoming message" << std::endl;
         }
     }
     else
     {
-        LogMessage("handle_receive: error: ", error.message());
+        std::cout << "handle_receive: error: " << error.message()  << std::endl;
     }
 
     start_receive();
 }
 
-void NetworkServer::send(boost::array& buffer, udp::endpoint target_endpoint)
+void NetworkServer::send(boost::array<uint8_t, 1024>& buffer, udp::endpoint target_endpoint)
 {
     socket.send_to(boost::asio::buffer(buffer), target_endpoint);
-    sentBytes += message.size();
+    sentBytes += buffer.size();
     sentMessages++;
 }
 
@@ -64,13 +64,13 @@ void NetworkServer::run_service()
         try {
             io_service.run();
         } catch( const std::exception& e ) {
-            LogMessage("Server network exception: ",e.what());
+            std::cout << "Server network exception: " << e.what() << std::endl;
         }
         catch(...) {
-            LogMessage("Unknown exception in server network thread");
+            std::cout << "Unknown exception in server network thread" << std::endl;
         }
     }
-    LogMessage("Server network thread stopped");
+    std::cout << "Server network thread stopped" << std::endl;
 };
 
 uint64_t NetworkServer::get_client_id(udp::endpoint endpoint)
@@ -93,7 +93,7 @@ void NetworkServer::SendToClient(uint8_t* flatbuffer_data, unsigned int flatbuff
         send(buffer, clients.left.at(clientID));
     }
     catch (std::out_of_range) {
-        LogMessage("Unknown client ID");
+        std::cout << "Unknown client ID" << std::endl;
     }
 };
 
@@ -111,7 +111,7 @@ void NetworkServer::SendToAll(uint8_t* flatbuffer_data, unsigned int flatbuffer_
 {
     boost::array<uint8_t, 1024> buffer;
     std::memcpy(&buffer[0], flatbuffer_data, flatbuffer_data_size);
-    
+
     for (auto client: clients)
         send(buffer, client.right);
 };

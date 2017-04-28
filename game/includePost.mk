@@ -2,6 +2,7 @@ LIBS = $(addprefix -lNan2, $(NAN2_LIBS)) $(addprefix -l, $(EXT_LIBS))
 INC_ARGS = -I$(INC_PATH) -I$(ROOT_INC_DIR)
 LIB_SRCS = $(addprefix $(SRC_PATH)/, $(LIB_SRCS_NAKED))
 ENTRY_SRCS = $(addprefix $(SRC_PATH)/, $(ENTRY_SRCS_NAKED))
+TARGET_LIBS = $(addprefix $(TARGET_PATH)/, $(TARGET_LIBS_NAKED))
 TARGET_SRCS = $(addprefix $(TARGET_PATH)/, $(TARGET_SRCS_NAKED))
 LIB_HEADERS := $(shell find $(INC_PATH) -name '*.h')
 LIB_INC_COPIED_DIR = $(ROOT_INC_DIR)/$(NAMESPACE)/$(LIB_NAMESPACE)
@@ -12,7 +13,7 @@ LIB_OBJS = $(LIB_SRCS:%.cpp=$(OBJS_DIR)/%.o)
 
 ALL_LIBS = -lNan2$(LIB_NAME) $(LIBS)
 
-TARGET_OBJS = $(TARGET_SRCS:%.cpp=$(OBJS_DIR)%.o)
+TARGET_LIBS_OBJS = $(TARGET_LIBS:%.cpp=$(OBJS_DIR)/%.o)
 TARGET_NAMES = $(TARGET_SRCS:%.cpp=$(OBJS_DIR)/%)
 ENTRY_NAMES = $(ENTRY_SRCS:%.cpp=$(OBJS_DIR)/%)
 
@@ -21,7 +22,7 @@ MAKE_BATCH_SHELL_SCRIPT = $(SCRIPTS_DIR)/make_all.sh
 
 .SUFFIXES : .cpp .o
 
-all : makeall PRE_CHECK $(LIB_INC_COPIED) depend $(LIB_FULL_NAME) $(ENTRY_NAMES) $(TARGET_NAMES) clean_for_main
+all : makeall PRE_CHECK $(LIB_INC_COPIED) depend $(LIB_FULL_NAME) $(ENTRY_NAMES) $(TARGET_LIBS_OBJS) $(TARGET_NAMES) clean_for_main
 
 PRE_CHECK :
 	@echo "==================================================="
@@ -61,8 +62,8 @@ $(ENTRY_NAMES): $$@.o
 $(TARGET_NAMES): $$@.o
 	@echo "==================================================="
 	@echo "= Linking $@ "
-	@echo "$(CC) -o $@ $< $(LIB_DIRS) $(ALL_LIBS)"
-	$(CC) -o $(@:$(OBJS_DIR)/%=%) $< $(LIB_DIRS) $(ALL_LIBS)
+	@echo "$(CC) -o $@ $< $(TARGET_LIBS_OBJS) $(LIB_DIRS) $(ALL_LIBS)"
+	$(CC) -o $(@:$(OBJS_DIR)/%=%) $< $(TARGET_LIBS_OBJS) $(LIB_DIRS) $(ALL_LIBS)
 
 depend :
 	@`[ -d $(OBJS_DIR) ] || $(MKDIR) -p $(OBJS_DIR)`
@@ -70,7 +71,7 @@ depend :
 	@echo "= Depend $@ "
 	@$(RM) -f $(DEPEND_FILE)
 	$(DEPEND_SHELL_SCRIPT) \
-		"$(LIB_SRCS:%.cpp=%) $(TARGET_SRCS:%.cpp=%)" \
+		"$(LIB_SRCS:%.cpp=%) $(TARGET_SRCS:%.cpp=%) $(TARGET_LIBS:%.cpp=%)" \
 		"$(CC)" "$(OBJS_DIR)" \
 		"$(CFLAGS)" "$(DBG_FLAGS)" "$(INC_ARGS)" "$(DEPEND_FILE)"
 

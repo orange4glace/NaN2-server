@@ -14,7 +14,8 @@ LIB_SRCS_NAKED = world_time.cpp math_helper.cpp \
 	entity/collider_interface.cpp \
 	network/player_input_packet.cpp network/bullet_packet.cpp network/character_snapshot.cpp \
 	world/world.cpp world/world_map.cpp 
-TARGET_SRCS_NAKED = void_pointer_test.cpp mock_serv.cpp
+TARGET_LIBS_NAKED = network_server.cpp
+TARGET_SRCS_NAKED = mock_serv.cpp
 
 SUB_DIRS_STRIPED = math
 
@@ -22,6 +23,6 @@ SUB_DIRS_STRIPED = math
 NAN2_LIBS += Math
 
 # external libs
-EXT_LIBS += boost_system flatbuffers
+EXT_LIBS += boost_system boost_thread flatbuffers
 
 include $(PROJ_ROOT)/includePost.mk
