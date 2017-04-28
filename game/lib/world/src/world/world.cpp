@@ -1,7 +1,9 @@
 // world.cpp
 #include "world/world.h"
 
+#include "logger/logger.h"
 #include "network/packet_builder.h"
+#include "network/packet_parser.h"
 
 #include <flatbuffers/flatbuffers.h>
 #include "flatbuffers/world_generated.h"
@@ -9,7 +11,9 @@
 namespace nan2 {
 
   World::World() : 
-    last_system_time_(std::chrono::high_resolution_clock::now()) {
+    last_system_time_(std::chrono::high_resolution_clock::now()),
+    packet_send_timer_(0) {
+    world_map_ = new WorldMap();
   }
 
   World::World(WorldMap* world_map) : 
@@ -20,18 +24,19 @@ namespace nan2 {
   World::~World() {
   }
 
-  const WorldMap& World::world_map() const {
-    return *world_map_;
+  const WorldMap* World::world_map() const {
+    return world_map_;
   }
 
   void World::Update() {
-    std::chrono::high_resolution_clock::time_point cur_system_time;
+    std::chrono::high_resolution_clock::time_point cur_system_time(std::chrono::high_resolution_clock::now());
     std::chrono::duration<double, std::milli> time_span = cur_system_time - last_system_time_;
     last_system_time_ = cur_system_time;
     float dt = (float)time_span.count() / 1000.0f;
     float current_fixed_time = Time::current_time();
     Time::delta_time(dt);
     Time::current_time(Time::current_time() + dt);
+    packet_send_timer_ += dt;
 
     StagingUpdatables();
     
@@ -64,6 +69,12 @@ namespace nan2 {
     }
 
     DestroyUpdatables();
+
+    L_DEBUG << packet_send_timer_;
+    if (packet_send_timer_ > 1 / 30.0f) {
+      packet_send_timer_ = 0;
+      TakeSnapshot();
+    }
   }
 
   void World::FixedUpdate() {
@@ -108,8 +119,12 @@ namespace nan2 {
 
   Player* World::AddPlayer(int id) {
     if (players_.count(id)) return players_[id];
-    Player* player = new Player(this, 35);
+    Player* player = new Player(this, id);
     players_.insert({id, player});
+    AddUpdatable(&player->character());
+
+    L_DEBUG << "Added Player " << id;
+
     return player;
   }
 
@@ -118,7 +133,23 @@ namespace nan2 {
     return nullptr;
   }
 
+  std::map<int, Player*>& World::GetPlayers() {
+    return players_;
+  }
+
   void World::TakeSnapshot() {
+    uint8_t* buffer = PacketBuilder::BuildPacket(*this);
+    L_DEBUG << "snapshot";
+  }
+
+  void World::OnPacketReceived(uint8_t* buffer) {
+    int player_id;
+    auto player_inputs = PacketParser::ParsePlayerInputPacket(buffer, player_id);
+    Player* player = GetPlayer(player_id);
+    if (player == nullptr) 
+      player = AddPlayer(player_id);
+    for (auto input : player_inputs)
+      player->character().AddInput(input);
   }
   
 }

@@ -18,30 +18,14 @@ namespace nan2 {
 
   public:
 
-    static inline void delta_time(float dt) {
-      Time::delta_time_ = dt;
-    }
-    static inline float delta_time() {
-      return Time::delta_time_;
-    }
-    static inline void current_time(float t) {
-      Time::current_time_ = t;
-    }
-    static inline float current_time() {
-      return Time::current_time_;
-    }
-    static inline void fixed_delta_time(float t) {
-      Time::fixed_delta_time_ = t;
-    }
-    static inline float fixed_delta_time() {
-      return Time::fixed_delta_time_;
-    }
-    static inline void current_fixed_time(float t) {
-      Time::current_fixed_time_ = t;
-    }
-    static inline float current_fixed_time() {
-      return Time::current_fixed_time_;
-    }
+    static void delta_time(float dt);
+    static float delta_time();
+    static void current_time(float t);
+    static float current_time();
+    static void fixed_delta_time(float t);
+    static float fixed_delta_time();
+    static void current_fixed_time(float t);
+    static float current_fixed_time();
 
   };
 

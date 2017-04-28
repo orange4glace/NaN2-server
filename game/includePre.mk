@@ -36,4 +36,4 @@ SCRIPTS_DIR = $(PROJ_ROOT)/scripts
 DEPEND_FILE = $(OBJS_DIR)/depend_file
 
 SUB_DIRS = $(addprefix $(PROJ_ROOT)/lib/, $(SUB_DIRS_STRIPED))
-LIB_DIRS = -L./ $(addprefix -L, $(SUB_DIRS))
+LIB_DIRS = -L. $(addprefix -L, $(SUB_DIRS))

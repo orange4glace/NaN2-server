@@ -14,14 +14,10 @@ struct PlayerInput;
 
 struct PlayerInput FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_ID = 4,
-    VT_MOVE_DIR = 6,
-    VT_FIRE_DIR = 8,
-    VT_TIME = 10
+    VT_MOVE_DIR = 4,
+    VT_FIRE_DIR = 6,
+    VT_TIME = 8
   };
-  int32_t id() const {
-    return GetField<int32_t>(VT_ID, 0);
-  }
   uint8_t move_dir() const {
     return GetField<uint8_t>(VT_MOVE_DIR, 0);
   }
@@ -33,7 +29,6 @@ struct PlayerInput FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int32_t>(verifier, VT_ID) &&
            VerifyField<uint8_t>(verifier, VT_MOVE_DIR) &&
            VerifyField<uint8_t>(verifier, VT_FIRE_DIR) &&
            VerifyField<int32_t>(verifier, VT_TIME) &&
@@ -44,9 +39,6 @@ struct PlayerInput FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct PlayerInputBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_id(int32_t id) {
-    fbb_.AddElement<int32_t>(PlayerInput::VT_ID, id, 0);
-  }
   void add_move_dir(uint8_t move_dir) {
     fbb_.AddElement<uint8_t>(PlayerInput::VT_MOVE_DIR, move_dir, 0);
   }
@@ -62,7 +54,7 @@ struct PlayerInputBuilder {
   }
   PlayerInputBuilder &operator=(const PlayerInputBuilder &);
   flatbuffers::Offset<PlayerInput> Finish() {
-    const auto end = fbb_.EndTable(start_, 4);
+    const auto end = fbb_.EndTable(start_, 3);
     auto o = flatbuffers::Offset<PlayerInput>(end);
     return o;
   }
@@ -70,31 +62,14 @@ struct PlayerInputBuilder {
 
 inline flatbuffers::Offset<PlayerInput> CreatePlayerInput(
     flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
     uint8_t move_dir = 0,
     uint8_t fire_dir = 0,
     int32_t time = 0) {
   PlayerInputBuilder builder_(_fbb);
   builder_.add_time(time);
-  builder_.add_id(id);
   builder_.add_fire_dir(fire_dir);
   builder_.add_move_dir(move_dir);
   return builder_.Finish();
-}
-
-inline const nan2::game::world::PlayerInput *GetPlayerInput(const void *buf) {
-  return flatbuffers::GetRoot<nan2::game::world::PlayerInput>(buf);
-}
-
-inline bool VerifyPlayerInputBuffer(
-    flatbuffers::Verifier &verifier) {
-  return verifier.VerifyBuffer<nan2::game::world::PlayerInput>(nullptr);
-}
-
-inline void FinishPlayerInputBuffer(
-    flatbuffers::FlatBufferBuilder &fbb,
-    flatbuffers::Offset<nan2::game::world::PlayerInput> root) {
-  fbb.Finish(root);
 }
 
 }  // namespace world

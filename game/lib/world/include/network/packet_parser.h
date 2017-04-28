@@ -1,9 +1,12 @@
 #ifndef PACKET_PARSER_H_
 #define PACKET_PARSER_H_
 
-#include "../flatbuffers/player_input.h"
+#include "player_input_packet.h"
+#include "../flatbuffers/player_inputs_generated.h"
 
 #include <flatbuffers/flatbuffers.h>
+
+#include <vector>
 
 #define fb nan2::game::world
 
@@ -15,12 +18,7 @@ namespace nan2 {
 
   public:
 
-    static void ParsePacket(World& world) {
-    }
-
-    static void ParsePlayerInputPacket() {
-      
-    }
+    static std::vector<PlayerInputPacket> ParsePlayerInputPacket(uint8_t* buffer_pointer, int& out_player_id);
 
   };
 

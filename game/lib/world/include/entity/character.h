@@ -25,6 +25,7 @@ namespace nan2 {
   private:
 
     const static Vector2 COLLIDER_SIZE_;
+    const static float SPEED_;
     const static float DASH_DURATION_;
     const static float DASH_DISTANCE_;
     const static float DASH_COOLDOWN_;
@@ -65,6 +66,9 @@ namespace nan2 {
     void Move256(unsigned char dir, float time);
     void Move(float dx, float dy);
     void MoveTo(float x, float y);
+
+    // Network function
+    void AddInput(PlayerInputPacket& plp);
 
     const Player& player() const;
     const Vector2& position() const;

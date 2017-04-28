@@ -29,9 +29,9 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
     if (!error)
     {
         try {
-            auto message = ClientMessage(std::string(recv_buffer.data(), recv_buffer.data() + bytes_transferred), get_client_id(remote_endpoint));
-            if (!message.first.empty())
-                incomingMessages.push(message);
+            uint8_t* message = new uint8_t[1024];
+            std::memcpy(message, recv_buffer.data(), bytes_transferred);
+            incomingMessages.push(message);
             receivedBytes += bytes_transferred;
             receivedMessages++;
         }

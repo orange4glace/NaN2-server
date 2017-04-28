@@ -2,6 +2,8 @@
 #ifndef VECTOR2_H
 #define VECTOR2_H
 
+#include <iostream>
+
 namespace nan2 {
 
   class Vector2 {
@@ -31,6 +33,8 @@ namespace nan2 {
     const float y() const;
     Vector2& set_x(float x);
     Vector2& set_y(float y);
+
+    friend std::ostream& operator<<(std::ostream& os, const Vector2& v);
 
     static const Vector2 ZERO;
     static Vector2 FromAngle(float angle);

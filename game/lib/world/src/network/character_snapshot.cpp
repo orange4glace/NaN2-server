@@ -3,6 +3,8 @@
 
 namespace nan2 {
 
+  CharacterSnapshot::CharacterSnapshot() {}
+
   void CharacterSnapshot::AddBulletPacket(BulletPacket& bullet_packet) {
     bullet_packet.time(snapshot_time_);
     bullet_packets_.push_back(bullet_packet);

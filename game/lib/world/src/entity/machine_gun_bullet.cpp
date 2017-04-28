@@ -46,7 +46,7 @@ namespace nan2 {
     }
 
     const AABB* rTile = nullptr;
-    const std::vector<AABB>& world_map = world_->world_map().GetStaticAABBTileColliders();
+    const std::vector<AABB>& world_map = world_->world_map()->GetStaticAABBTileColliders();
     for (const AABB& tile : world_map) {
       float cf = AABB::SweptAABB(thisCollider, dv, tile, Vector2::ZERO);
       if (cf < rf) {

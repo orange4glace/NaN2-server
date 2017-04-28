@@ -2,6 +2,10 @@
 #include "math_helper.h"
 
 namespace nan2 {
+
+  MathHelper* MathHelper::instance_;
+
+  MathHelper::MathHelper() {}
   
   const MathHelper& MathHelper::instance() {
     if (instance_ == nullptr) {

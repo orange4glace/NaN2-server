@@ -9,6 +9,8 @@
 #include "math_helper.h"
 #include "time.h"
 
+#include "logger/logger.h"
+
 #include <vector>
 #include <algorithm>
 
@@ -18,6 +20,10 @@ namespace nan2 {
   const Vector2& Character::COLLIDER_SIZE() {
     return Character::COLLIDER_SIZE_;
   }
+  const float Character::SPEED_         = 115.0f;
+  const float Character::DASH_DURATION_ = .5f;
+  const float Character::DASH_DISTANCE_ = 100.0f;
+  const float Character::DASH_COOLDOWN_ = 1.0f;
 
   Character::Character(Player* player) :
     Updatable(&(player->world())),
@@ -53,10 +59,10 @@ namespace nan2 {
     float dt = Time::fixed_delta_time();
     snapshot_.Update(dt);
     float given_time = dt;
-    while (packets_.empty()) {
+    while (!packets_.empty()) {
       PlayerInputPacket packet = packets_.front();
       bool is_fresh = !packet.is_consuming();
-      given_time = packet.Consume(given_time);
+      float consuming_time = packet.Consume(given_time);
 
       // Consume packet
       if (is_fresh) {
@@ -66,9 +72,9 @@ namespace nan2 {
           snapshot_.AddBulletPacket(bullet_packet);
         }
       }
-      Move256(packet.move_dir(), packet.time());
+      Move256(packet.move_dir(), consuming_time);
 
-      if (given_time == 0) break;
+      if (given_time <= 0.0000001f) break;
       else packets_.pop_front();
     }
 
@@ -88,7 +94,7 @@ namespace nan2 {
   }
 
   void Character::Move256(unsigned char dir, float time) {
-    Vector2 dv = MathHelper::instance().normal_dir_256(dir) * time;
+    Vector2 dv = MathHelper::instance().normal_dir_256(dir) * time * Character::SPEED_;
     MoveTo(position_.x() + dv.x(), position_.y() + dv.y());
   }
 
@@ -97,12 +103,18 @@ namespace nan2 {
   }
 
   void Character::MoveTo(float x, float y) {
-    const std::vector<AABB>& static_map_colliders = world_->world_map().GetStaticAABBTileColliders();
+    const std::vector<AABB>& static_map_colliders = world_->world_map()->GetStaticAABBTileColliders();
+    position_ = Vector2(x, y);
     for (AABB aabb : static_map_colliders) {
       AABB cur = collider();
       Vector2 dv = AABB::SimpleAABB(cur, aabb);
       position_ += dv;
     }
+    L_DEBUG << "moved to " << position_;
+  }
+
+  void Character::AddInput(PlayerInputPacket& plp) {
+    packets_.push_back(plp);
   }
 
   const Player& Character::player() const {

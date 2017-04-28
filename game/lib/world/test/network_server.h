@@ -14,7 +14,7 @@ using boost::asio::ip::udp;
 
 typedef boost::bimap<int64_t, udp::endpoint> ClientList;
 typedef ClientList::value_type Client;
-typedef std::pair<std::string, int64_t> ClientMessage;
+typedef uint8_t* ClientMessage;
 
 class NetworkServer {
 public:

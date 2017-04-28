@@ -28,6 +28,8 @@ namespace nan2 {
 
     std::chrono::high_resolution_clock::time_point last_system_time_;
 
+    float packet_send_timer_;
+
     // Static World Map data
     WorldMap *world_map_;
     std::map<int, Player*> players_;
@@ -48,7 +50,7 @@ namespace nan2 {
     World(WorldMap* world_map);
     ~World();
 
-    const WorldMap& world_map() const;
+    const WorldMap* world_map() const;
 
     void Update();
     void FixedUpdate();
@@ -66,6 +68,8 @@ namespace nan2 {
     Player* AddPlayer(int id);
     Player* GetPlayer(int id);
     std::map<int, Player*>& GetPlayers();
+
+    void OnPacketReceived(uint8_t* buffer);
 
   };
   

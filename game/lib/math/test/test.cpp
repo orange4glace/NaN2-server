@@ -6,5 +6,6 @@
 using namespace nan2;
 
 int main() {
-  std::cout << (INFINITY < INFINITY);
+  Vector2 v(3, 5);
+  std::cout << v;
 }

@@ -1,0 +1,10 @@
+include "player_input.fbs";
+
+namespace nan2.game.world;
+
+table PlayerInputs {
+  id:int;
+  inputs:[PlayerInput];
+}
+
+root_type PlayerInputs;
