@@ -220,7 +220,74 @@ void packet_handler(mgne::Packet& p)
   case PACKET_MATCH_REQ: {
     short state = -1;
     auto match_req = GetMatchReq(buffer_pointer);
-    char mode = match_req->mode();
+    GameMode mode = (GameMode)match_req->mode();
+    char req = match_req->req();
+
+    flatbuffers::FlatBufferBuilder builder_ntf(1024);
+
+    switch (req) {
+    case M_REQ_JOIN: {
+      groups[session_id]->Lock();
+      if (session_id == groups[session_id]->GetLeader()) {
+        state = 1; 
+      }
+
+      if (state == 1 && game_matching_queue.Push(groups[session_id],
+        mode) == true) {
+        auto match_ans = CreateMatchAns(builder, M_ANS_SUCC); 
+        auto match_ntf = CreateMatchNtf(builder_ntf, M_NTF_JOIN);
+        builder.Finish(match_ans);
+        builder_ntf.Finish(match_ans);
+      } else {
+        auto match_ans = CreateMatchAns(builder, M_ANS_FAIL);
+        builder.Finish(match_ans);
+      }
+
+      if (state == 1) {
+        std::vector<int> sessions; 
+        groups[session_id]->GetSessions(sessions);
+        for (auto id : sessions) {
+          send(id, builder_ntf.GetSize(), PACKET_MATCH_NTF,
+            (char*)builder_ntf.GetBufferPointer());
+        }
+      }
+      send(session_id, builder.GetSize(), PACKET_MATCH_ANS,
+        (char*)builder.GetBufferPointer());
+      groups[session_id]->Unlock();
+      break;
+    }
+    case M_REQ_OUT: {
+      groups[session_id]->Lock();      
+      if (session_id == groups[session_id]->GetLeader()) {
+        state = 1;
+      }
+
+      if (state == 1 &&
+        game_matching_queue.Erase(groups[session_id], mode) == true) {
+
+        auto match_ans = CreateMatchAns(builder, M_ANS_SUCC);
+        auto match_ntf = CreateMatchNtf(builder_ntf, M_NTF_JOIN);
+        builder.Finish(match_ans);
+        builder_ntf.Finish(match_ans);
+      } else {
+        auto match_ans = CreateMatchAns(builder, M_ANS_FAIL);
+        builder.Finish(match_ans);
+      }
+
+      if (state == 1) {
+        std::vector<int> sessions;
+        groups[session_id]->GetSessions(sessions);
+        for (auto id : sessions) {
+          send(id, builder_ntf.GetSize(), PACKET_MATCH_NTF,
+            (char*)builder_ntf.GetBufferPointer());
+        }
+      }
+      send(session_id, builder.GetSize(), PACKET_MATCH_ANS,
+        (char*)builder.GetBufferPointer());
+      groups[session_id]->Unlock();
+      break;
+    }
+    }
     break;
   }
   }

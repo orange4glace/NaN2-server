@@ -11,6 +11,27 @@ namespace lobby {
 
 struct MatchReq;
 
+enum M_REQ {
+  M_REQ_JOIN = 0,
+  M_REQ_OUT = 1,
+  M_REQ_MIN = M_REQ_JOIN,
+  M_REQ_MAX = M_REQ_OUT
+};
+
+inline const char **EnumNamesM_REQ() {
+  static const char *names[] = {
+    "JOIN",
+    "OUT",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameM_REQ(M_REQ e) {
+  const size_t index = static_cast<int>(e);
+  return EnumNamesM_REQ()[index];
+}
+
 enum M_MODE {
   M_MODE_DEATH = 0,
   M_MODE_MIN = M_MODE_DEATH,
@@ -32,13 +53,18 @@ inline const char *EnumNameM_MODE(M_MODE e) {
 
 struct MatchReq FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_MODE = 4
+    VT_REQ = 4,
+    VT_MODE = 6
   };
+  M_REQ req() const {
+    return static_cast<M_REQ>(GetField<int8_t>(VT_REQ, 0));
+  }
   M_MODE mode() const {
     return static_cast<M_MODE>(GetField<int8_t>(VT_MODE, 0));
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<int8_t>(verifier, VT_REQ) &&
            VerifyField<int8_t>(verifier, VT_MODE) &&
            verifier.EndTable();
   }
@@ -47,6 +73,9 @@ struct MatchReq FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct MatchReqBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
+  void add_req(M_REQ req) {
+    fbb_.AddElement<int8_t>(MatchReq::VT_REQ, static_cast<int8_t>(req), 0);
+  }
   void add_mode(M_MODE mode) {
     fbb_.AddElement<int8_t>(MatchReq::VT_MODE, static_cast<int8_t>(mode), 0);
   }
@@ -56,7 +85,7 @@ struct MatchReqBuilder {
   }
   MatchReqBuilder &operator=(const MatchReqBuilder &);
   flatbuffers::Offset<MatchReq> Finish() {
-    const auto end = fbb_.EndTable(start_, 1);
+    const auto end = fbb_.EndTable(start_, 2);
     auto o = flatbuffers::Offset<MatchReq>(end);
     return o;
   }
@@ -64,9 +93,11 @@ struct MatchReqBuilder {
 
 inline flatbuffers::Offset<MatchReq> CreateMatchReq(
     flatbuffers::FlatBufferBuilder &_fbb,
+    M_REQ req = M_REQ_JOIN,
     M_MODE mode = M_MODE_DEATH) {
   MatchReqBuilder builder_(_fbb);
   builder_.add_mode(mode);
+  builder_.add_req(req);
   return builder_.Finish();
 }
 

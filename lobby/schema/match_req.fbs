@@ -1,8 +1,10 @@
 namespace nan2.lobby;
 
+enum M_REQ : byte { JOIN = 0, OUT }
 enum M_MODE : byte { DEATH = 0 }
 
 table MatchReq {
+  req: M_REQ;
   mode: M_MODE;
 }
 
