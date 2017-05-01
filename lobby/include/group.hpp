@@ -64,6 +64,35 @@ private:
   short death_rating_;
   std::vector<int> members_;
 };
+
+class GroupRequests : mgne::pattern::ThreadSafe {
+public:
+  void Clear()
+  {
+    in_group_ = false;
+    groups_.clear();
+  }
+  void Erase(Group* group)
+  {
+    groups_.erase(group);
+  }
+  void Insert(Group* group)
+  {
+    groups_.insert(group);
+  }
+  bool Find(Group* group) 
+  {
+    return (groups_.find(group) != groups_.end()); 
+  }
+
+  void Lock() { Lock(); }
+  void Unlock() { Unlock(); }
+
+  bool in_group_;
+
+private:
+  std::unordered_set<Group*> groups_;
+};
 }
 
 #endif

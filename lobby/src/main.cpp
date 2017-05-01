@@ -13,6 +13,7 @@ using namespace nan2::lobby;
 std::array<std::unique_ptr<model::User>, MAX_CAPACITY + 1> users;
 std::array<std::shared_ptr<Group>, MAX_CAPACITY + 1> groups;
 std::array<int, MAX_CAPACITY + 1> join_reqs;
+std::array<GroupRequests, MAX_CAPACITY + 1> requests;
 
 GameMatchingQueue game_matching_queue;
 
@@ -69,7 +70,7 @@ void packet_handler(mgne::Packet& p)
       state = 1;
       users[session_id] = std::unique_ptr<model::User>(tmp);
       groups[session_id] = std::make_shared<Group>(session_id);
-      join_reqs[session_id] = 0;
+      requests[session_id].Clear();
     }
     switch (state) {
     case -1: {
@@ -103,12 +104,14 @@ void packet_handler(mgne::Packet& p)
     case G_REQ_JOIN: {
       std::string user_tag = group_req->user_tag()->str();
       int to_id = find_session_id(user_tag);
-      if (to_id != -1) { // TODO : check current group
-        join_reqs[session_id] = to_id;
+      groups[to_id]->Lock();
+      requests[session_id].Lock();
+      if (to_id != -1 && requests[session_id].in_group_ == false
+        && requests[session_id].Find(groups[to_id].get()) == false ) {
+        requests[session_id].Insert(groups[to_id].get());
         state = 1;
       }
 
-      groups[to_id]->Lock();
       if (state == 1) {
         int leader = groups[to_id]->GetLeader();
         auto group_ans = CreateGroupAns(builder, G_ANS_SUCC);
@@ -131,30 +134,37 @@ void packet_handler(mgne::Packet& p)
         send(to_id, builder_ntf.GetSize(), PACKET_GROUP_NTF,
           (char*)builder_ntf.GetBufferPointer());
       }
+      requests[session_id].Unlock();
       groups[to_id]->Unlock();
       break;
     }
     case G_REQ_OUT: {
       std::vector<int> sessions;
+      if (requests[session_id].in_group_ == true) {
+        groups[session_id]->Lock();
+        groups[session_id]->Out(session_id);
+        groups[session_id]->GetSessions(sessions);
+        groups[session_id]->Unlock();
+        groups[session_id] = std::make_shared<Group>(session_id);
+        requests[session_id].in_group_ = false;
+        
+        auto group_ans = CreateGroupAns(builder, G_ANS_SUCC);
+        std::vector<flatbuffers::Offset<flatbuffers::String>> user_tags_(1);
+        user_tags_[0] = builder_ntf.CreateString(user->GetUserTag());
+        auto user_tags = builder.CreateVector(user_tags_);
+        auto group_ntf = CreateGroupNtf(builder_ntf, G_NTF_OUT, 0, user_tags);
+        builder.Finish(group_ans);
+        builder_ntf.Finish(group_ntf);
+      } else {
+        auto group_ans = CreateGroupAns(builder, G_ANS_FAIL);
+        builder.Finish(group_ans);
+      }
 
-      groups[session_id]->Lock();
-      groups[session_id]->Out(session_id);
-      groups[session_id]->GetSessions(sessions);
-      groups[session_id]->Unlock();
-
-      groups[session_id] = std::make_shared<Group>(session_id);
-      
-      auto group_ans = CreateGroupAns(builder, G_ANS_SUCC);
-      std::vector<flatbuffers::Offset<flatbuffers::String>> user_tags_(1);
-      user_tags_[0] = builder_ntf.CreateString(user->GetUserTag());
-      auto user_tags = builder.CreateVector(user_tags_);
-      auto group_ntf = CreateGroupNtf(builder_ntf, G_NTF_OUT, 0, user_tags);
-      builder.Finish(group_ans);
-      builder_ntf.Finish(group_ntf);
-
-      for (auto id : sessions) {
-        send(id, builder_ntf.GetSize(), PACKET_GROUP_NTF,
-          (char*)builder_ntf.GetBufferPointer());
+      if (state == 1) {
+        for (auto id : sessions) {
+          send(id, builder_ntf.GetSize(), PACKET_GROUP_NTF,
+            (char*)builder_ntf.GetBufferPointer());
+        }
       }
       send(session_id, builder.GetSize(), PACKET_GROUP_ANS,
         (char*)builder.GetBufferPointer());
@@ -166,14 +176,16 @@ void packet_handler(mgne::Packet& p)
       bool tmp;
 
       groups[session_id]->Lock();
-      groups[session_id]->GetSessions(sessions);
-      tmp = groups[session_id]->Join(to_id);
-      groups[session_id]->Unlock();
+      requests[to_id].Lock();
 
-      if (tmp && join_reqs[to_id] == session_id) state = 1;
-      // TODO check does he have any group
-
+      if (requests[to_id].in_group_ == false &&
+        requests[to_id].Find(groups[session_id].get()) &&
+        groups[session_id]->Join(to_id)) state = 1;
+      
       if (state == 1) {
+        groups[session_id]->GetSessions(sessions);
+        groups[to_id] = groups[session_id];
+
         auto group_ans = CreateGroupAns(builder, G_ANS_SUCC); 
         std::vector<flatbuffers::Offset<flatbuffers::String>> user_tags_(1);
         user_tags_[0] = builder_ntf.CreateString(users[to_id]->GetUserTag());
@@ -188,6 +200,7 @@ void packet_handler(mgne::Packet& p)
         auto user_tags_full = builder_ntf2.CreateVector(user_tags_); 
         auto group_ntf2 = CreateGroupNtf(builder_ntf2, G_NTF_JOIN_SC, 0,
           user_tags_full);
+
         builder.Finish(group_ans);
         builder_ntf.Finish(group_ntf);
         builder_ntf2.Finish(group_ntf2);
@@ -207,10 +220,33 @@ void packet_handler(mgne::Packet& p)
       send(session_id, builder.GetSize(), PACKET_GROUP_ANS,
         (char*)builder.GetBufferPointer());
 
+      requests[to_id].Unlock();
+      groups[session_id]->Unlock();
       break;
     }
     case G_REQ_JOIN_DN: {
-      // Don't need to implement
+      int to_id = group_req->ntf_id();  
+      groups[session_id]->Lock();
+      requests[to_id].Lock();
+
+      if (groups[session_id]->GetLeader() == session_id
+        && requests[to_id].Find(groups[session_id].get())) {
+        state = 1;
+      }
+      
+      if (state == 1) {
+        requests[to_id].Erase(groups[session_id].get());
+        auto group_ans = CreateGroupAns(builder, G_ANS_SUCC);
+        builder.Finish(group_ans);
+      } else {
+        auto group_ans = CreateGroupAns(builder, G_ANS_FAIL);
+        builder.Finish(group_ans);
+      }
+      
+      send(session_id, builder.GetSize(), PACKET_GROUP_ANS,
+        (char*)builder.GetBufferPointer());
+      requests[to_id].Unlock();
+      groups[session_id]->Unlock();
       break;
     }
 

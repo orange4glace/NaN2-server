@@ -6,7 +6,7 @@
 #define _MATCHING_QUEUE_
 
 #include <memory>
-#include <iostream>
+#include <unordered_set>
 
 #include <mgne/pattern/thread_job_queue.hpp>
 
@@ -72,6 +72,8 @@ public:
 
   bool Push(std::shared_ptr<Group>& group_ptr, GameMode mode)
   {
+    if (group_set_.find(group_ptr) != group_set_.end()) return false;
+
     short rating = -1;
     switch (mode) {
     case GameMode::DEATH: {
@@ -89,6 +91,7 @@ public:
     } else {
       matching_queues_[mode]->PushGold(group_ptr);
     }
+    group_set_.insert(group_ptr);
     return true;
   }
 
@@ -121,6 +124,7 @@ public:
  
 public:
   std::array<std::unique_ptr<InterfaceMQ>, 1> matching_queues_;
+  std::unordered_set<std::shared_ptr<Group>> group_set_;
 
 };
 }
