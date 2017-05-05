@@ -33,7 +33,7 @@
 // -----------
 
 /* git ignored */
-#include "../../include/server_db_info.h"
+#include "../../include/server_db_infos.h"
 
 #endif
 
