@@ -16,6 +16,7 @@ std::array<int, MAX_CAPACITY + 1> join_reqs;
 std::array<GroupRequests, MAX_CAPACITY + 1> requests;
 
 GameMatchingQueue game_matching_queue;
+UserList user_list;
 
 boost::asio::io_service match_service;
 boost::asio::deadline_timer match_timer(match_service);
@@ -23,6 +24,7 @@ boost::asio::deadline_timer match_timer(match_service);
 sql::Driver* driver;
 sql::Connection* mysql_con;
 cpp_redis::redis_client redis_client;
+
 mgne::tcp::Server* server;
 
 int req_count = 0;
@@ -67,11 +69,18 @@ void packet_handler(mgne::Packet& p)
     model::User* tmp = model::User::LoadUser(token, redis_client);
 
     if (tmp != nullptr) {
-      state = 1;
-      users[session_id] = std::unique_ptr<model::User>(tmp);
-      groups[session_id] = std::make_shared<Group>(session_id);
-      requests[session_id].Clear();
+      user_list.Lock();
+      if (user_list.Find(tmp->GetUserId()) == false) {
+        state = 1;
+        std::cout << "Entered: " << tmp->GetUserTag() << std::endl;
+        user_list.Insert(tmp->GetUserId());
+        users[session_id] = std::unique_ptr<model::User>(tmp);
+        groups[session_id] = std::make_shared<Group>(session_id);
+        requests[session_id].Clear();
+      }
+      user_list.Unlock();
     }
+    
     switch (state) {
     case -1: {
       auto join_ans = CreateJoinAns(builder, J_ANS_FAIL_UNAUTH);

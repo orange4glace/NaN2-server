@@ -30,6 +30,8 @@
 
 #include "game_matching_queue.hpp"
 #include "group.hpp"
+#include "user_list.hpp"
+
 #include "protocol.hpp"
 
 // -- FlatB --

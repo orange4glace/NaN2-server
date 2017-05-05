@@ -56,8 +56,8 @@ public:
   int GetSize() { return 1 + members_.size(); }
   void SetDeathRating(short rating) { death_rating_ = rating; }
   short GetDeathRating() { return death_rating_; }
-  void Lock() { Lock(); }
-  void Unlock() { Unlock(); }
+  void Lock() { ThreadSafe::Lock(); }
+  void Unlock() { ThreadSafe::Unlock(); }
 
 private:
   int leader_;
@@ -85,8 +85,8 @@ public:
     return (groups_.find(group) != groups_.end()); 
   }
 
-  void Lock() { Lock(); }
-  void Unlock() { Unlock(); }
+  void Lock() { ThreadSafe::Lock(); }
+  void Unlock() { ThreadSafe::Unlock(); }
 
   bool in_group_;
 
