@@ -6,6 +6,9 @@
 
 #include "../include/join_req_generated.h"
 #include "../include/join_ans_generated.h"
+#include "../include/group_req_generated.h"
+#include "../include/group_ans_generated.h"
+
 #include "../include/protocol.hpp"
 
 using namespace nan2::lobby;
@@ -56,8 +59,16 @@ int main()
   std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
     << std::endl;
 
-  while (1) {
+  len = read_(socket, buffer,
+    ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
 
+  while (1) {
+    len = read_(socket, buffer, sizeof(TCP_PACKET_HEADER));
+    std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
+      << std::endl;
+    len = read_(socket, buffer,
+      ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
   }
+
   return 0;
 }

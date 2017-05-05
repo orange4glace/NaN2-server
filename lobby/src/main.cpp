@@ -39,7 +39,8 @@ void match(const boost::system::error_code& error)
 int find_session_id(std::string& user_tag)
 {
   for (int i = 1; i <= MAX_CAPACITY; i++) {
-    if (users[i]->GetUserTag().compare(user_tag) == 0) {
+    if (users[i].get() != nullptr &&
+      users[i]->GetUserTag().compare(user_tag) == 0) {
       return i;
     }
   }
@@ -56,7 +57,7 @@ void send(int session_id, short packet_size, short packet_id,
 
 void packet_handler(mgne::Packet& p)
 {
-  int session_id = p.GetPacketId();
+  int session_id = p.GetSessionId();
   char* buffer_pointer = p.GetPacketData()->data();
   flatbuffers::FlatBufferBuilder builder(1024);
 
@@ -108,12 +109,13 @@ void packet_handler(mgne::Packet& p)
     short state = -1;
     auto group_req = GetGroupReq(buffer_pointer);
     char req = group_req->req(); 
-
     switch (req) {
     case G_REQ_JOIN: {
       std::string user_tag = group_req->user_tag()->str();
+      std::cout << "Join req to : " << user_tag << std::endl;
       int to_id = find_session_id(user_tag);
-      groups[to_id]->Lock();
+      std::cout << "to_id : " << to_id << std::endl; 
+      if (to_id != -1) groups[to_id]->Lock();
       requests[session_id].Lock();
       if (to_id != -1 && requests[session_id].in_group_ == false
         && requests[session_id].Find(groups[to_id].get()) == false ) {
@@ -127,8 +129,8 @@ void packet_handler(mgne::Packet& p)
         auto user_tag = builder_ntf.CreateString(user->GetUserTag());
         std::vector<flatbuffers::Offset<flatbuffers::String>> user_tags_(1);
         user_tags_[0] = user_tag;
-        auto user_tags = builder.CreateVector(user_tags_);
-        auto group_ntf = CreateGroupNtf(builder, G_NTF_JOIN_RQ, session_id,
+        auto user_tags = builder_ntf.CreateVector(user_tags_);
+        auto group_ntf = CreateGroupNtf(builder_ntf, G_NTF_JOIN_RQ, session_id,
           user_tags);
         builder.Finish(group_ans); 
         builder_ntf.Finish(group_ntf);
@@ -144,7 +146,7 @@ void packet_handler(mgne::Packet& p)
           (char*)builder_ntf.GetBufferPointer());
       }
       requests[session_id].Unlock();
-      groups[to_id]->Unlock();
+      if (to_id != -1) groups[to_id]->Unlock();
       break;
     }
     case G_REQ_OUT: {
@@ -258,7 +260,6 @@ void packet_handler(mgne::Packet& p)
       groups[session_id]->Unlock();
       break;
     }
-
     }
     break;
   }

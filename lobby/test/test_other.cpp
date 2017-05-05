@@ -6,6 +6,9 @@
 
 #include "../include/join_req_generated.h"
 #include "../include/join_ans_generated.h"
+#include "../include/group_req_generated.h"
+#include "../include/group_ans_generated.h"
+
 #include "../include/protocol.hpp"
 
 using namespace nan2::lobby;
@@ -56,8 +59,31 @@ int main()
   std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
     << std::endl;
 
-  while (1) {
+  len = read_(socket, buffer,
+    ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
 
-  }
+  // sending group join req
+  std::cout << "Join complete" << std::endl;
+  builder.Clear();  
+  
+  auto user_tag = builder.CreateString("test#4546");
+  auto group_req = CreateGroupReq(builder, G_REQ_JOIN, 0, user_tag);
+  builder.Finish(group_req);
+
+  header.packet_size = sizeof(TCP_PACKET_HEADER) + builder.GetSize();
+  header.packet_id = PACKET_GROUP_REQ;
+
+  write_(socket, (char*)&header, sizeof(TCP_PACKET_HEADER));
+  write_(socket, (char*)builder.GetBufferPointer(), builder.GetSize());
+  
+  len = read_(socket, buffer, sizeof(TCP_PACKET_HEADER));
+
+  std::cout << "Received  : " << len << std::endl;
+  std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
+    << std::endl;
+
+  len = read_(socket, buffer,
+    ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
+
   return 0;
 }
