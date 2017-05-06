@@ -32,14 +32,17 @@ int main()
   boost::asio::ip::tcp::endpoint endpoint(
     boost::asio::ip::address::from_string(SERVER_IP), PORT_NUMBER);
   boost::asio::ip::tcp::socket socket(io_service);
+
+  socket.connect(endpoint);
+
   int len;
   char buffer[1024];
 
-  socket.connect(endpoint);
 
   TCP_PACKET_HEADER header;
   flatbuffers::FlatBufferBuilder builder(1024);
 
+  /* 1. join */
   std::string token_str = "Y4&3svx*UF2*xH@MxEhY";
   auto token = builder.CreateString(token_str);
   auto join_req = CreateJoinReq(builder, token);
@@ -53,6 +56,7 @@ int main()
 
   std::cout << "Sended    : " << builder.GetSize() << std::endl;
 
+  /* 2. receive join_ans */
   len = read_(socket, buffer, sizeof(TCP_PACKET_HEADER));
 
   std::cout << "Received  : " << len << std::endl;
@@ -62,8 +66,9 @@ int main()
   len = read_(socket, buffer,
     ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
 
-  // sending group join req
   std::cout << "Join complete" << std::endl;
+
+  /* 3. send group join_rq */
   builder.Clear();  
   
   auto user_tag = builder.CreateString("test#4546");
@@ -76,6 +81,18 @@ int main()
   write_(socket, (char*)&header, sizeof(TCP_PACKET_HEADER));
   write_(socket, (char*)builder.GetBufferPointer(), builder.GetSize());
   
+  /* 4. receive group join_rq ans */
+  len = read_(socket, buffer, sizeof(TCP_PACKET_HEADER));
+
+  std::cout << "Received  : " << len << std::endl;
+  std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
+    << std::endl;
+
+  len = read_(socket, buffer,
+    ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
+
+  /* 5. receive group join_ac ntf */
+
   len = read_(socket, buffer, sizeof(TCP_PACKET_HEADER));
 
   std::cout << "Received  : " << len << std::endl;

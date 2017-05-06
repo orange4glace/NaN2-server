@@ -182,8 +182,10 @@ void packet_handler(mgne::Packet& p)
       break;
     }
     case G_REQ_JOIN_AC: {
+      std::cout << "!!!" << std::endl;
       std::vector<int> sessions;
       int to_id = group_req->ntf_id();
+      std::cout << "to_id : " << to_id << std::endl;
       bool tmp;
 
       groups[session_id]->Lock();
@@ -200,7 +202,7 @@ void packet_handler(mgne::Packet& p)
         auto group_ans = CreateGroupAns(builder, G_ANS_SUCC); 
         std::vector<flatbuffers::Offset<flatbuffers::String>> user_tags_(1);
         user_tags_[0] = builder_ntf.CreateString(users[to_id]->GetUserTag());
-        auto user_tags = builder.CreateVector(user_tags_);
+        auto user_tags = builder_ntf.CreateVector(user_tags_);
         auto group_ntf = CreateGroupNtf(builder_ntf, G_NTF_JOIN_NEW, 0,
           user_tags);
         user_tags_.clear();
