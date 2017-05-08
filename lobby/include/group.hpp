@@ -12,6 +12,10 @@
 #define GROUP_MAX_CAPACITY 6
 
 namespace nan2 {
+class Group;
+class GroupSet;
+typedef mgne::pattern::ThreadJobQueue<std::shared_ptr<Group>> GroupQueue;
+
 class Group : mgne::pattern::ThreadSafe {
 public:
   Group(int session_id)
@@ -54,15 +58,59 @@ public:
 
   int GetLeader() { return leader_; }
   int GetSize() { return 1 + members_.size(); }
+  bool GetInGroups() { return in_groups_; }
   void SetDeathRating(short rating) { death_rating_ = rating; }
   short GetDeathRating() { return death_rating_; }
   void Lock() { ThreadSafe::Lock(); }
   void Unlock() { ThreadSafe::Unlock(); }
 
 private:
+  friend class GroupSet;
+  bool in_groups_;
+
   int leader_;
   short death_rating_;
   std::vector<int> members_;
+};
+
+class GroupSet {
+public:
+  typedef std::unordered_set<std::shared_ptr<Group>>::iterator iterator;
+
+  GroupSet() { }
+  GroupSet(std::vector<std::shared_ptr<Group>>& trace)
+  {
+    for (auto& group : trace) {
+      group->in_groups_ = true;
+      groups_.insert(group);
+    }
+  }
+  ~GroupSet()
+  {
+    for (auto& group : groups_) {
+      group->in_groups_ = false;
+    }
+  }
+
+  bool FindAndErase(std::shared_ptr<Group>& group, GroupSet& remain)
+  {
+    if (groups_.find(group) != groups_.end()) return false;
+
+    groups_.erase(group);
+    for (auto& group: groups_) {
+      remain.groups_.insert(group);
+      // correct way?
+    }
+    return true;
+  }
+
+  iterator begin() { return groups_.begin(); }
+  iterator end() { return groups_.end(); }
+
+private:
+  std::unordered_set<std::shared_ptr<Group>> groups_;
+  GroupQueue* queues_;
+
 };
 
 class GroupRequests : mgne::pattern::ThreadSafe {

@@ -367,9 +367,9 @@ int main()
     std::cout << "# ERR: redis connection lost" << std::endl;
     exit(-1);
   });
+
   redis_client.sync_commit();
   std::cout << " - Redis Connection success" << std::endl;
-
 
   boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), 4000);
   server = new mgne::tcp::Server(endpoint, MAX_CAPACITY, 3, 3, packet_handler);
