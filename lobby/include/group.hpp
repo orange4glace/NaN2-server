@@ -9,6 +9,9 @@
 
 #include <mgne/pattern/thread_safe.hpp>
 
+#include "../../include/models/user.hpp"
+#include "protocol.hpp"
+
 #define GROUP_MAX_CAPACITY 6
 
 namespace nan2 {
@@ -18,10 +21,12 @@ typedef mgne::pattern::ThreadJobQueue<std::shared_ptr<Group>> GroupQueue;
 
 class Group : mgne::pattern::ThreadSafe {
 public:
-  Group(int session_id)
-    : leader_(session_id)
+  Group(int leader)
+    : leader_(leader)
+    , curr_mode_(GameMode::DEFAULT)
   {
   }
+
   Group(Group& g1, Group& g2)
     : leader_(g1.leader_)
     , members_(g1.members_.size() + g2.members_.size())
@@ -59,17 +64,21 @@ public:
   int GetLeader() { return leader_; }
   int GetSize() { return 1 + members_.size(); }
   bool GetInGroups() { return in_groups_; }
-  void SetDeathRating(short rating) { death_rating_ = rating; }
-  short GetDeathRating() { return death_rating_; }
+  void SetRatingDeath(short rating) { rating_death_ = rating; }
+  short GetRatingDeath() { return rating_death_; }
+  void SetCurrMode(GameMode mode) { curr_mode_ = mode; }
+  GameMode GetCurrMode() { return curr_mode_; }
   void Lock() { ThreadSafe::Lock(); }
   void Unlock() { ThreadSafe::Unlock(); }
+  bool TryLock() { return ThreadSafe::TryLock(); }
 
 private:
   friend class GroupSet;
   bool in_groups_;
 
   int leader_;
-  short death_rating_;
+  GameMode curr_mode_;
+  short rating_death_;
   std::vector<int> members_;
 };
 
@@ -92,7 +101,7 @@ public:
     }
   }
 
-  bool FindAndErase(std::shared_ptr<Group>& group, GroupSet& remain)
+  bool FindAndErase(const std::shared_ptr<Group>& group, GroupSet& remain)
   {
     if (groups_.find(group) != groups_.end()) return false;
 

@@ -4,18 +4,24 @@
 
 #include "../include/header.hpp"
 
-#define MAX_CAPACITY     1000
-#define FIND_MATCH_INTERVAL 5
+#define MAX_CAPACITY       1000
+#define MAX_GAME_CAPACITY  1000
+#define FIND_MATCH_INTERVAL   5
 
 using namespace nan2;
 using namespace nan2::lobby;
 
 std::array<std::unique_ptr<model::User>, MAX_CAPACITY + 1> users;
 std::array<std::shared_ptr<Group>, MAX_CAPACITY + 1> groups;
-std::array<int, MAX_CAPACITY + 1> join_reqs;
+std::array<std::string, MAX_CAPACITY + 1> tokens;
 std::array<GroupRequests, MAX_CAPACITY + 1> requests;
+std::array<int, MAX_CAPACITY + 1> join_reqs;
 
-GameMatchingQueue game_matching_queue;
+int game_handler(GroupSet& A, GroupSet& B, GameMode mode);
+int game_count;
+GameMode games[MAX_GAME_CAPACITY];
+GameMatchingQueue game_matching_queue(game_handler);
+
 UserList user_list;
 
 boost::asio::io_service match_service;
@@ -28,6 +34,97 @@ cpp_redis::redis_client redis_client;
 mgne::tcp::Server* server;
 
 int req_count = 0;
+
+void send(int session_id, short packet_size, short packet_id,
+  char* packet_data)
+{
+  mgne::Packet tmp(packet_size, packet_id, packet_data,
+    mgne::Packet::PacketType::PACKET_TCP);
+  server->GetSessionManager().Send(session_id, tmp);
+}
+
+int game_handler(GroupSet& A, GroupSet& B, GameMode mode)
+{
+  bool result_try_lock_A = true;
+  bool result_try_lock_B = true;
+  int state = -1;
+
+  for (auto& group : A) result_try_lock_A = group->TryLock();
+  for (auto& group : B) result_try_lock_B = group->TryLock();
+
+  if (result_try_lock_A && result_try_lock_B) {
+    // can take both
+    state = 0;
+  } else if (!result_try_lock_A && result_try_lock_B) {
+    state = 1;
+  } else if (result_try_lock_A && !result_try_lock_B) {
+    state = 2;
+  } else {
+    // can't take both
+    state = 3;
+  }
+
+  if (state == 0) {
+    flatbuffers::FlatBufferBuilder builder(1024);
+    auto match_ntf = CreateMatchNtf(builder, M_NTF_MATCHED);
+    builder.Finish(match_ntf);
+
+    games[game_count] = mode;
+
+    std::vector<int> sessions; 
+    for (auto& group : A) {
+      sessions.clear();
+      group->GetSessions(sessions);
+      for (auto& session : sessions) {
+        send(session, builder.GetSize(), PACKET_MATCH_NTF,
+          (char*)builder.GetBufferPointer());
+        redis_client.hset(tokens[session], "game_num",
+          std::to_string(game_count));
+      }
+      game_matching_queue.Erase(group, mode);
+    }
+    for (auto& group : B) {
+      sessions.clear();
+      group->GetSessions(sessions);
+      for (auto& session : sessions) {
+        send(session, builder.GetSize(), PACKET_MATCH_NTF,
+          (char*)builder.GetBufferPointer());
+        redis_client.hset(tokens[session], "game_num",
+          std::to_string(game_count));
+      }
+      game_matching_queue.Erase(group, mode);
+    }
+    game_count++;
+    redis_client.sync_commit();
+  }
+
+  for (auto& group : A) group->Unlock();
+  for (auto& group : B) group->Unlock();
+
+  return state;
+}
+
+bool enter_match_queue(std::shared_ptr<Group>& group_ptr, GameMode mode)
+{ // need to check mode
+  if (group_ptr->GetCurrMode() != GameMode::DEFAULT || 
+    mode == GameMode::DEFAULT) return false;
+  std::vector<int> sessions;
+  short rating = 0;
+  group_ptr->GetSessions(sessions);
+  group_ptr->SetCurrMode(mode);
+  for (auto& id : sessions) {
+    rating += users[id]->GetRatingDeath();
+  }
+  group_ptr->SetRatingDeath(rating / sessions.size());
+  return game_matching_queue.Push(group_ptr, mode);
+}
+
+bool out_match_queue(std::shared_ptr<Group>& group_ptr)
+{
+  GameMode curr_mode = group_ptr->GetCurrMode();
+  if (curr_mode == GameMode::DEFAULT) return false;
+  return game_matching_queue.Erase(group_ptr, curr_mode);
+}
 
 void match(const boost::system::error_code& error)
 {
@@ -45,14 +142,6 @@ int find_session_id(std::string& user_tag)
     }
   }
   return -1;
-}
-
-void send(int session_id, short packet_size, short packet_id,
-  char* packet_data)
-{
-  mgne::Packet tmp(packet_size, packet_id, packet_data,
-    mgne::Packet::PacketType::PACKET_TCP);
-  server->GetSessionManager().Send(session_id, tmp);
 }
 
 void packet_handler(mgne::Packet& p)
@@ -75,6 +164,8 @@ void packet_handler(mgne::Packet& p)
         state = 1;
         std::cout << "Entered: " << tmp->GetUserTag() << std::endl;
         user_list.Insert(tmp->GetUserId());
+
+        tokens[session_id] = token;
         users[session_id] = std::unique_ptr<model::User>(tmp);
         groups[session_id] = std::make_shared<Group>(session_id);
         requests[session_id].Clear();
@@ -152,13 +243,18 @@ void packet_handler(mgne::Packet& p)
     case G_REQ_OUT: {
       std::vector<int> sessions;
       if (requests[session_id].in_group_ == true) {
+        state = 1;
+      }
+
+      if (state == 1) {
         groups[session_id]->Lock();
         groups[session_id]->Out(session_id);
         groups[session_id]->GetSessions(sessions);
+        out_match_queue(groups[session_id]);
         groups[session_id]->Unlock();
         groups[session_id] = std::make_shared<Group>(session_id);
         requests[session_id].in_group_ = false;
-        
+
         auto group_ans = CreateGroupAns(builder, G_ANS_SUCC);
         std::vector<flatbuffers::Offset<flatbuffers::String>> user_tags_(1);
         user_tags_[0] = builder_ntf.CreateString(user->GetUserTag());
@@ -182,7 +278,6 @@ void packet_handler(mgne::Packet& p)
       break;
     }
     case G_REQ_JOIN_AC: {
-      std::cout << "!!!" << std::endl;
       std::vector<int> sessions;
       int to_id = group_req->ntf_id();
       std::cout << "to_id : " << to_id << std::endl;
@@ -345,6 +440,8 @@ int main()
 {
   FILE *logfile = fopen("lobby.log", "w");
   mgne::log::Logger::SetFile(logfile);
+
+  for (int i = 0; i < MAX_GAME_CAPACITY; i++) games[i] = GameMode::DEFAULT;
 
   const std::string mysql_url  = MYSQL_URL;
   const std::string mysql_user = MYSQL_USER;

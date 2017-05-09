@@ -17,7 +17,8 @@ const short  PACKET_MATCH_NTF        =   8;
 
 namespace nan2 {
 enum GameMode {
-  DEATH
+  DEATH,
+  DEFAULT
 };
 }
 
