@@ -234,6 +234,9 @@ void packet_handler(mgne::Packet& p)
       builder.Finish(login_ans);
     } else {
       // SUCCESS
+      std::cout << "login_successed " << std::endl;
+      std::cout << "user_tag: " << user_tag << std::endl;
+      std::cout << "token: " << token << std::endl << std::endl;
       auto user_tag_ = builder.CreateString(user_tag);
       auto token_ = builder.CreateString(token);
       auto login_ans = CreateLoginAns(builder, L_ANS_SUCC,

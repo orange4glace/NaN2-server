@@ -13,7 +13,9 @@ struct MatchNtf;
 
 enum M_NTF {
   M_NTF_MATCHED = 0,
-  M_NTF_FAIL = 1,
+  M_NTF_JOIN = 1,
+  M_NTF_OUT = 2,
+  M_NTF_FAIL = 3,
   M_NTF_MIN = M_NTF_MATCHED,
   M_NTF_MAX = M_NTF_FAIL
 };
@@ -21,6 +23,8 @@ enum M_NTF {
 inline const char **EnumNamesM_NTF() {
   static const char *names[] = {
     "MATCHED",
+    "JOIN",
+    "OUT",
     "FAIL",
     nullptr
   };

@@ -26,7 +26,7 @@ int main()
   TCP_PACKET_HEADER header;
   flatbuffers::FlatBufferBuilder builder(1024);
 
-  std::string uuid_str = "550e8400-e29b-41d4-a716-446655477244";
+  std::string uuid_str = "550e8400-e29b-41d4-a716-446655446391";
   auto uuid = builder.CreateString(uuid_str);
   auto login_req = CreateLoginReq(builder, uuid);
   builder.Finish(login_req);

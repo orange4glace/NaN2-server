@@ -13,7 +13,10 @@
 #include <unordered_map>
 
 #include <mgne/mgne.hpp>
+#include <boost/asio.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 // -- MySQL --
 #include "../../include/mysql.h"
@@ -25,7 +28,10 @@
 
 #include "../../include/models/user.hpp"
 
+#include "game_matching_queue.hpp"
 #include "group.hpp"
+#include "user_list.hpp"
+
 #include "protocol.hpp"
 
 // -- FlatB --

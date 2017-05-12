@@ -15,7 +15,6 @@
 namespace nan2::model {
 class User {
 public:
-
   User(int user_id, std::string& user_tag)
     : user_id_(user_id)
     , user_tag_(user_tag)
@@ -28,7 +27,7 @@ public:
     return true;
   }
 
-  const int& GetUserId() { return user_id_; }
+  int GetUserId() { return user_id_; }
   const std::string& GetUserTag() { return user_tag_; }
   const short& GetRatingDeath() { return rating_death_; }
 
@@ -109,7 +108,6 @@ private:
   User() { }
 
   int user_id_;
-  int session_id_;
   short rating_death_;
   std::string user_tag_;
 
