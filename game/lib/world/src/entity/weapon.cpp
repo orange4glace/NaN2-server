@@ -48,13 +48,7 @@ namespace nan2 {
 
   Vector2 Weapon::GetBulletPoint(unsigned char dir, const Vector2& position) const {
     unsigned char hdir = (unsigned char)((dir + (252 / 4) + 252) % 252);
-    bool view_right;
-    if (hdir > (252 / 2)) {
-        view_right = false;
-    }
-    else {
-        view_right = true;
-    }
+    bool view_right = (hdir <= (252 / 2));
     MathHelper::instance().normal_dir_252(dir);
     Vector2 arm_anchor = position + Vector2(3.0f * (view_right ? -1 : 1), -2);
     float rad = MathHelper::instance().DegToRad(MathHelper::instance().normal_angle_252(dir));
@@ -63,7 +57,6 @@ namespace nan2 {
     Vector2 arm_vector = quant * arm_length;
     Vector2 weapon_attacher_anchor = arm_anchor + arm_vector;
     Vector2 bullet_point = MathHelper::instance().RotateVector2(bullet_point_, rad) + weapon_attacher_anchor;
-    L_DEBUG << arm_anchor << " " << arm_vector << " " << weapon_attacher_anchor << " " << MathHelper::instance().normal_angle_252(dir) << " " << MathHelper::instance().RotateVector2(bullet_point_, rad) << " " << bullet_point;
     return bullet_point;
   }
 

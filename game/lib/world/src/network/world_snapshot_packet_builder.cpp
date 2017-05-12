@@ -6,13 +6,17 @@
 namespace nan2 {
 
   WorldSnapshotPacketBuilder::WorldSnapshotPacketBuilder() :
-    PacketBuilder(1024) {
-    
+    PacketBuilder() {
+    packet_type_ = PACKET_SNAPSHOT;
   }
 
   void WorldSnapshotPacketBuilder::Build(World& world) {
     if (!clean_) Clear();
     clean_ = false;
+
+    AppendInt(PACKET_SNAPSHOT);
+
+    flatbuffers::FlatBufferBuilder builder_;
 
     std::vector<flatbuffers::Offset<fb::Player>> players_vector;
     auto playerMap = world.GetPlayers();
@@ -64,7 +68,7 @@ namespace nan2 {
 
     builder_.Finish(world_offset);
 
-    BuildBufferVector();
+    AppendFlatBuffer(builder_);
   }
 
 }
