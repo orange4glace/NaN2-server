@@ -19,7 +19,11 @@ struct Character FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_POS = 4,
     VT_HP = 6,
     VT_BULLETS = 8,
-    VT_DASHING_TIME = 10
+    VT_DASHING_TIME = 10,
+    VT_WEAPON_MAGAZINE = 12,
+    VT_WEAPON_AMMO = 14,
+    VT_WEAPON_COOLDOWN = 16,
+    VT_WEAPON_RELOAD_TIME = 18
   };
   const nan2::game::world::Vec2 *pos() const {
     return GetStruct<const nan2::game::world::Vec2 *>(VT_POS);
@@ -33,6 +37,18 @@ struct Character FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int32_t dashing_time() const {
     return GetField<int32_t>(VT_DASHING_TIME, 0);
   }
+  int32_t weapon_magazine() const {
+    return GetField<int32_t>(VT_WEAPON_MAGAZINE, 0);
+  }
+  int32_t weapon_ammo() const {
+    return GetField<int32_t>(VT_WEAPON_AMMO, 0);
+  }
+  int32_t weapon_cooldown() const {
+    return GetField<int32_t>(VT_WEAPON_COOLDOWN, 0);
+  }
+  int32_t weapon_reload_time() const {
+    return GetField<int32_t>(VT_WEAPON_RELOAD_TIME, 0);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<nan2::game::world::Vec2>(verifier, VT_POS) &&
@@ -41,6 +57,10 @@ struct Character FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.Verify(bullets()) &&
            verifier.VerifyVectorOfTables(bullets()) &&
            VerifyField<int32_t>(verifier, VT_DASHING_TIME) &&
+           VerifyField<int32_t>(verifier, VT_WEAPON_MAGAZINE) &&
+           VerifyField<int32_t>(verifier, VT_WEAPON_AMMO) &&
+           VerifyField<int32_t>(verifier, VT_WEAPON_COOLDOWN) &&
+           VerifyField<int32_t>(verifier, VT_WEAPON_RELOAD_TIME) &&
            verifier.EndTable();
   }
 };
@@ -60,13 +80,25 @@ struct CharacterBuilder {
   void add_dashing_time(int32_t dashing_time) {
     fbb_.AddElement<int32_t>(Character::VT_DASHING_TIME, dashing_time, 0);
   }
+  void add_weapon_magazine(int32_t weapon_magazine) {
+    fbb_.AddElement<int32_t>(Character::VT_WEAPON_MAGAZINE, weapon_magazine, 0);
+  }
+  void add_weapon_ammo(int32_t weapon_ammo) {
+    fbb_.AddElement<int32_t>(Character::VT_WEAPON_AMMO, weapon_ammo, 0);
+  }
+  void add_weapon_cooldown(int32_t weapon_cooldown) {
+    fbb_.AddElement<int32_t>(Character::VT_WEAPON_COOLDOWN, weapon_cooldown, 0);
+  }
+  void add_weapon_reload_time(int32_t weapon_reload_time) {
+    fbb_.AddElement<int32_t>(Character::VT_WEAPON_RELOAD_TIME, weapon_reload_time, 0);
+  }
   CharacterBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
   CharacterBuilder &operator=(const CharacterBuilder &);
   flatbuffers::Offset<Character> Finish() {
-    const auto end = fbb_.EndTable(start_, 4);
+    const auto end = fbb_.EndTable(start_, 8);
     auto o = flatbuffers::Offset<Character>(end);
     return o;
   }
@@ -77,8 +109,16 @@ inline flatbuffers::Offset<Character> CreateCharacter(
     const nan2::game::world::Vec2 *pos = 0,
     int32_t hp = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<nan2::game::world::Bullet>>> bullets = 0,
-    int32_t dashing_time = 0) {
+    int32_t dashing_time = 0,
+    int32_t weapon_magazine = 0,
+    int32_t weapon_ammo = 0,
+    int32_t weapon_cooldown = 0,
+    int32_t weapon_reload_time = 0) {
   CharacterBuilder builder_(_fbb);
+  builder_.add_weapon_reload_time(weapon_reload_time);
+  builder_.add_weapon_cooldown(weapon_cooldown);
+  builder_.add_weapon_ammo(weapon_ammo);
+  builder_.add_weapon_magazine(weapon_magazine);
   builder_.add_dashing_time(dashing_time);
   builder_.add_bullets(bullets);
   builder_.add_hp(hp);
@@ -91,13 +131,21 @@ inline flatbuffers::Offset<Character> CreateCharacterDirect(
     const nan2::game::world::Vec2 *pos = 0,
     int32_t hp = 0,
     const std::vector<flatbuffers::Offset<nan2::game::world::Bullet>> *bullets = nullptr,
-    int32_t dashing_time = 0) {
+    int32_t dashing_time = 0,
+    int32_t weapon_magazine = 0,
+    int32_t weapon_ammo = 0,
+    int32_t weapon_cooldown = 0,
+    int32_t weapon_reload_time = 0) {
   return nan2::game::world::CreateCharacter(
       _fbb,
       pos,
       hp,
       bullets ? _fbb.CreateVector<flatbuffers::Offset<nan2::game::world::Bullet>>(*bullets) : 0,
-      dashing_time);
+      dashing_time,
+      weapon_magazine,
+      weapon_ammo,
+      weapon_cooldown,
+      weapon_reload_time);
 }
 
 }  // namespace world

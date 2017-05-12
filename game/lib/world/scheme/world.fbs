@@ -3,6 +3,7 @@ include "player.fbs";
 namespace nan2.game.world;
 
 table World {
+  packet_ack:int;
   players:[Player];
 }
 

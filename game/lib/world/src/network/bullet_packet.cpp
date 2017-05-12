@@ -3,22 +3,22 @@
 
 namespace nan2 {
 
-  BulletPacket::BulletPacket(char type, const Vector2& position, unsigned char dir) : 
+  BulletPacket::BulletPacket(int time, unsigned char type, unsigned char dir) : 
+    time_(time),
     type_(type),
-    position_(position),
     dir_(dir) {
   }
 
-  void BulletPacket::time(float time) {
-    time_ = time;
-  }
-
-  const Vector2& BulletPacket::position() const {
-    return position_;
-  }
-
-  float BulletPacket::time() const {
+  int BulletPacket::time() const {
     return time_;
+  }
+
+  unsigned char BulletPacket::type() const {
+    return type_;
+  }
+
+  unsigned char BulletPacket::dir() const {
+    return dir_;
   }
 
 }

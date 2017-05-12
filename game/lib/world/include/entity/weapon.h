@@ -18,23 +18,35 @@ namespace nan2 {
     short id_;
     Character* character_;
 
-    float max_cool_down_;
-    float cooldown_;
-    float max_reload_time_;
-    float reload_time_;
+    int max_cooldown_;
+    int cooldown_;
+    int max_reload_time_;
+    int reload_time_;
+    int max_ammo_;
+    int ammo_;
+    int max_magazine_;
+    int magazine_;
     bool is_reloading_;
 
-    Vector2 firing_point_;
+    Vector2 bullet_point_;
 
+    bool CanFire();
+    void AfterFired();
+
+    Vector2 GetBulletPoint(unsigned char dir, const Vector2& position) const;
 
 
   public:
 
-    Weapon(Character* character, short id, float max_cool_down, float max_reload_time, const Vector2& firing_point);
+    Weapon(Character* character, short id, int max_cooldown, int max_reload_time, int max_ammo, int max_magazine, const Vector2& bullet_point);
 
     void Update();
     // Fire weapon
-    virtual bool Fire(const Vector2& angle) = 0;
+    virtual bool Fire(unsigned char dir) = 0;
+    int ammo();
+    int magazine();
+    int cooldown();
+    int reload_time();
 
 
   };

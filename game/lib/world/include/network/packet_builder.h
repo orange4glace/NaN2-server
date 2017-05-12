@@ -1,12 +1,7 @@
 #ifndef PACKET_BUILDER_H_
 #define PACKET_BUILDER_H_
 
-#include "../world/world.h"
-
-#include "../flatbuffers/world_generated.h"
-
 #include <flatbuffers/flatbuffers.h>
-#include <vector>
 
 #define fb nan2::game::world
 
@@ -14,11 +9,20 @@ namespace nan2 {
 
   class PacketBuilder {
 
-  private:
+  protected:
+
+    PacketBuilder(unsigned int size);
+
+    void BuildBufferVector();
+
+    flatbuffers::FlatBufferBuilder builder_;
+    std::vector<uint8_t> buffer_vector_;
+    bool clean_;
 
   public:
 
-    static uint8_t* BuildPacket(World& world);
+    const std::vector<uint8_t>& GetBufferVector() const;
+    void Clear();
 
   };
 

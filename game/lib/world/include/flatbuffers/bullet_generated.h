@@ -41,24 +41,24 @@ STRUCT_END(Vec2, 8);
 
 struct Bullet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_TYPE = 4,
-    VT_POS = 6,
-    VT_TIME = 8
+    VT_TIME = 4,
+    VT_TYPE = 6,
+    VT_DIR = 8
   };
+  int32_t time() const {
+    return GetField<int32_t>(VT_TIME, 0);
+  }
   uint8_t type() const {
     return GetField<uint8_t>(VT_TYPE, 0);
   }
-  const Vec2 *pos() const {
-    return GetStruct<const Vec2 *>(VT_POS);
-  }
-  float time() const {
-    return GetField<float>(VT_TIME, 0.0f);
+  uint8_t dir() const {
+    return GetField<uint8_t>(VT_DIR, 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<int32_t>(verifier, VT_TIME) &&
            VerifyField<uint8_t>(verifier, VT_TYPE) &&
-           VerifyField<Vec2>(verifier, VT_POS) &&
-           VerifyField<float>(verifier, VT_TIME) &&
+           VerifyField<uint8_t>(verifier, VT_DIR) &&
            verifier.EndTable();
   }
 };
@@ -66,14 +66,14 @@ struct Bullet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct BulletBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
+  void add_time(int32_t time) {
+    fbb_.AddElement<int32_t>(Bullet::VT_TIME, time, 0);
+  }
   void add_type(uint8_t type) {
     fbb_.AddElement<uint8_t>(Bullet::VT_TYPE, type, 0);
   }
-  void add_pos(const Vec2 *pos) {
-    fbb_.AddStruct(Bullet::VT_POS, pos);
-  }
-  void add_time(float time) {
-    fbb_.AddElement<float>(Bullet::VT_TIME, time, 0.0f);
+  void add_dir(uint8_t dir) {
+    fbb_.AddElement<uint8_t>(Bullet::VT_DIR, dir, 0);
   }
   BulletBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -89,12 +89,12 @@ struct BulletBuilder {
 
 inline flatbuffers::Offset<Bullet> CreateBullet(
     flatbuffers::FlatBufferBuilder &_fbb,
+    int32_t time = 0,
     uint8_t type = 0,
-    const Vec2 *pos = 0,
-    float time = 0.0f) {
+    uint8_t dir = 0) {
   BulletBuilder builder_(_fbb);
   builder_.add_time(time);
-  builder_.add_pos(pos);
+  builder_.add_dir(dir);
   builder_.add_type(type);
   return builder_.Finish();
 }

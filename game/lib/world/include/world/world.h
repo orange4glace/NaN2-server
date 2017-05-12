@@ -7,7 +7,10 @@
 #include "../entity/player.h"
 #include "../entity/character.h"
 
+#include "../logger/logger.h"
+
 #include <vector>
+#include <queue>
 #include <set>
 #include <map>
 #include <ratio>
@@ -16,8 +19,9 @@
 
 namespace nan2 {
 
-  struct updatableComp {
+  struct updatable_comparator {
     inline bool operator()(const Updatable* lhs, const Updatable* rhs) const {
+        if (lhs->update_order() == rhs->update_order()) return lhs->internal_id() < rhs->internal_id();
         return lhs->update_order() < rhs->update_order();
     }
   };
@@ -28,21 +32,24 @@ namespace nan2 {
 
     std::chrono::high_resolution_clock::time_point last_system_time_;
 
-    float packet_send_timer_;
+    int snapshot_send_timer_;
+    int last_snapshot_sent_time_;
 
     // Static World Map data
     WorldMap *world_map_;
     std::map<int, Player*> players_;
 
     // Update list
-    std::set<Updatable*> updatable_ready_stage_;
-    std::set<Updatable*> updatable_set_;
-    std::set<Updatable*> destroyable_set_;
+    std::set<Updatable*, updatable_comparator> updatable_ready_stage_;
+    std::set<Updatable*, updatable_comparator> updatable_set_;
+    std::set<Updatable*, updatable_comparator> destroyable_set_;
 
     void StagingUpdatables();
     void DestroyUpdatables();
 
     void TakeSnapshot();
+
+    std::queue< std::vector<uint8_t> > send_packet_queue_;
 
   public:
 
@@ -70,6 +77,11 @@ namespace nan2 {
     std::map<int, Player*>& GetPlayers();
 
     void OnPacketReceived(uint8_t* buffer);
+
+    unsigned int SendPacketQueueSize() const;
+    const std::vector<uint8_t> PopSendPacket();
+
+    int last_snapshot_sent_time() const;
 
   };
   

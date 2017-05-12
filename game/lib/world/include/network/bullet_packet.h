@@ -10,18 +10,17 @@ namespace nan2 {
 
   private:
 
-    float time_;
-    char type_;
-    Vector2 position_;
+    int time_;
+    unsigned char type_;
     unsigned char dir_;
 
   public:
 
-    BulletPacket(char type, const Vector2& position, unsigned char dir);
+    BulletPacket(int time, unsigned char type, unsigned char dir);
 
-    void time(float time);
-    const Vector2& position() const;
-    float time() const;
+    int time() const;
+    unsigned char type() const;
+    unsigned char dir() const;
 
   };
   

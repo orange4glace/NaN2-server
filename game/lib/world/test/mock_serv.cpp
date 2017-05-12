@@ -30,6 +30,10 @@ int main() {
       delete msg;
     }
     world.Update();
+    while (world.SendPacketQueueSize()) {
+      auto buffer = world.PopSendPacket();
+      serv.SendToAll(buffer);
+    }
 
     std::chrono::high_resolution_clock::time_point cur_system_time(std::chrono::high_resolution_clock::now());
     std::chrono::duration<double, std::milli> time_span = cur_system_time - last_system_time;

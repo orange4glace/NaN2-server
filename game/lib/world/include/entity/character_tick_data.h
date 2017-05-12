@@ -5,6 +5,8 @@
 #include <nan2/math/aabb.h>
 #include <nan2/math/vector2.h>
 
+#include <iostream>
+
 namespace nan2 {
 
   class CharacterTickData {
@@ -28,6 +30,8 @@ namespace nan2 {
     bool operator<(const CharacterTickData& o) const;
 
     static CharacterTickData Interpolate(CharacterTickData a, CharacterTickData b, int t);
+
+    friend std::ostream& operator<<(std::ostream& os, const CharacterTickData& snapshot);
 
   };
   

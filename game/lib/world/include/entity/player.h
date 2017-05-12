@@ -21,6 +21,8 @@ namespace nan2 {
     const int id() const;
     Character& character();
 
+    int last_input_acked_packet() const;
+
   };
   
 }

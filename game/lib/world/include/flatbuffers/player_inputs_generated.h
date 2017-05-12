@@ -16,18 +16,18 @@ struct PlayerInputs;
 
 struct PlayerInputs FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_ID = 4,
+    VT_PLAYER_ID = 4,
     VT_INPUTS = 6
   };
-  int32_t id() const {
-    return GetField<int32_t>(VT_ID, 0);
+  int32_t player_id() const {
+    return GetField<int32_t>(VT_PLAYER_ID, 0);
   }
   const flatbuffers::Vector<flatbuffers::Offset<nan2::game::world::PlayerInput>> *inputs() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<nan2::game::world::PlayerInput>> *>(VT_INPUTS);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int32_t>(verifier, VT_ID) &&
+           VerifyField<int32_t>(verifier, VT_PLAYER_ID) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_INPUTS) &&
            verifier.Verify(inputs()) &&
            verifier.VerifyVectorOfTables(inputs()) &&
@@ -38,8 +38,8 @@ struct PlayerInputs FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct PlayerInputsBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_id(int32_t id) {
-    fbb_.AddElement<int32_t>(PlayerInputs::VT_ID, id, 0);
+  void add_player_id(int32_t player_id) {
+    fbb_.AddElement<int32_t>(PlayerInputs::VT_PLAYER_ID, player_id, 0);
   }
   void add_inputs(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<nan2::game::world::PlayerInput>>> inputs) {
     fbb_.AddOffset(PlayerInputs::VT_INPUTS, inputs);
@@ -58,21 +58,21 @@ struct PlayerInputsBuilder {
 
 inline flatbuffers::Offset<PlayerInputs> CreatePlayerInputs(
     flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
+    int32_t player_id = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<nan2::game::world::PlayerInput>>> inputs = 0) {
   PlayerInputsBuilder builder_(_fbb);
   builder_.add_inputs(inputs);
-  builder_.add_id(id);
+  builder_.add_player_id(player_id);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<PlayerInputs> CreatePlayerInputsDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
+    int32_t player_id = 0,
     const std::vector<flatbuffers::Offset<nan2::game::world::PlayerInput>> *inputs = nullptr) {
   return nan2::game::world::CreatePlayerInputs(
       _fbb,
-      id,
+      player_id,
       inputs ? _fbb.CreateVector<flatbuffers::Offset<nan2::game::world::PlayerInput>>(*inputs) : 0);
 }
 

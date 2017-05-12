@@ -29,6 +29,7 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
     if (!error)
     {
         try {
+            get_client_id(remote_endpoint);
             uint8_t* message = new uint8_t[1024];
             std::memcpy(message, recv_buffer.data(), bytes_transferred);
             incomingMessages.push(message);
@@ -50,7 +51,7 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
     start_receive();
 }
 
-void NetworkServer::send(boost::array<uint8_t, 1024>& buffer, udp::endpoint target_endpoint)
+void NetworkServer::send(std::vector<uint8_t>& buffer, udp::endpoint target_endpoint)
 {
     socket.send_to(boost::asio::buffer(buffer), target_endpoint);
     sentBytes += buffer.size();
@@ -79,15 +80,14 @@ uint64_t NetworkServer::get_client_id(udp::endpoint endpoint)
     if (cit != clients.right.end())
         return (*cit).second;
 
+    std::cout << "Got " << endpoint << " " << clients.size() << std::endl;
     nextClientID++;
     clients.insert(Client(nextClientID, endpoint));
     return nextClientID;
 };
 
-void NetworkServer::SendToClient(uint8_t* flatbuffer_data, unsigned int flatbuffer_data_size, uint64_t clientID, bool guaranteed) 
+void NetworkServer::SendToClient(std::vector<uint8_t>& buffer, uint64_t clientID, bool guaranteed) 
 { 
-    boost::array<uint8_t, 1024> buffer;
-    std::memcpy(&buffer[0], flatbuffer_data, flatbuffer_data_size);
 
     try {
         send(buffer, clients.left.at(clientID));
@@ -97,20 +97,16 @@ void NetworkServer::SendToClient(uint8_t* flatbuffer_data, unsigned int flatbuff
     }
 };
 
-void NetworkServer::SendToAllExcept(uint8_t* flatbuffer_data, unsigned int flatbuffer_data_size, uint64_t clientID, bool guaranteed)
+void NetworkServer::SendToAllExcept(std::vector<uint8_t>& buffer, uint64_t clientID, bool guaranteed)
 {
-    boost::array<uint8_t, 1024> buffer;
-    std::memcpy(&buffer[0], flatbuffer_data, flatbuffer_data_size);
 
     for (auto client: clients)
         if (client.left != clientID)
             send(buffer, client.right);
 };
 
-void NetworkServer::SendToAll(uint8_t* flatbuffer_data, unsigned int flatbuffer_data_size, bool guaranteed)
+void NetworkServer::SendToAll(std::vector<uint8_t>& buffer, bool guaranteed)
 {
-    boost::array<uint8_t, 1024> buffer;
-    std::memcpy(&buffer[0], flatbuffer_data, flatbuffer_data_size);
 
     for (auto client: clients)
         send(buffer, client.right);

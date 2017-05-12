@@ -3,16 +3,17 @@
 
 namespace nan2 {
 
-  PlayerInputPacket::PlayerInputPacket(int time, unsigned char move_dir, unsigned char fire_dir) :
-    time_(time / 1000.0f),
-    move_dir_(move_dir),
-    fire_dir_(fire_dir) {   
+  PlayerInputPacket::PlayerInputPacket(unsigned int sequence, int time, unsigned char move_dir, unsigned char fire_dir) :
+  sequence_(sequence),
+  time_(time),
+  move_dir_(move_dir),
+  fire_dir_(fire_dir) {   
   }
 
-  float PlayerInputPacket::Consume(float time) {
+  int PlayerInputPacket::Consume(int time) {
     is_consuming_ = true;
     if (time_ <= time) {
-      float ret = time_;
+      int ret = time_;
       time_ = 0;
       return ret;
     }
@@ -21,19 +22,23 @@ namespace nan2 {
   }
 
   const bool PlayerInputPacket::is_consuming() const {
-      return is_consuming_;
+    return is_consuming_;
+  }
+
+  const unsigned int PlayerInputPacket::sequence() const {
+    return sequence_;
   }
 
   const unsigned char PlayerInputPacket::move_dir() const {
-      return move_dir_;
+    return move_dir_;
   }
 
   const unsigned char PlayerInputPacket::fire_dir() const {
-      return fire_dir_;
+    return fire_dir_;
   }
 
-  const float PlayerInputPacket::time() const {
-      return time_;
+  const int PlayerInputPacket::time() const {
+    return time_;
   }
 
   void PlayerInputPacket::Describe() const {

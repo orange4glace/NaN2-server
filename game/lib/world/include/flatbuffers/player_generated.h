@@ -18,10 +18,18 @@ struct Player;
 struct Player FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_ID = 4,
-    VT_CHARACTER = 6
+    VT_LAST_INPUT_ACKED_PACKET = 6,
+    VT_LAST_INPUT_REMAINING_TIME = 8,
+    VT_CHARACTER = 10
   };
   uint8_t id() const {
     return GetField<uint8_t>(VT_ID, 0);
+  }
+  uint32_t last_input_acked_packet() const {
+    return GetField<uint32_t>(VT_LAST_INPUT_ACKED_PACKET, 0);
+  }
+  uint32_t last_input_remaining_time() const {
+    return GetField<uint32_t>(VT_LAST_INPUT_REMAINING_TIME, 0);
   }
   const nan2::game::world::Character *character() const {
     return GetPointer<const nan2::game::world::Character *>(VT_CHARACTER);
@@ -29,6 +37,8 @@ struct Player FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_ID) &&
+           VerifyField<uint32_t>(verifier, VT_LAST_INPUT_ACKED_PACKET) &&
+           VerifyField<uint32_t>(verifier, VT_LAST_INPUT_REMAINING_TIME) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_CHARACTER) &&
            verifier.VerifyTable(character()) &&
            verifier.EndTable();
@@ -41,6 +51,12 @@ struct PlayerBuilder {
   void add_id(uint8_t id) {
     fbb_.AddElement<uint8_t>(Player::VT_ID, id, 0);
   }
+  void add_last_input_acked_packet(uint32_t last_input_acked_packet) {
+    fbb_.AddElement<uint32_t>(Player::VT_LAST_INPUT_ACKED_PACKET, last_input_acked_packet, 0);
+  }
+  void add_last_input_remaining_time(uint32_t last_input_remaining_time) {
+    fbb_.AddElement<uint32_t>(Player::VT_LAST_INPUT_REMAINING_TIME, last_input_remaining_time, 0);
+  }
   void add_character(flatbuffers::Offset<nan2::game::world::Character> character) {
     fbb_.AddOffset(Player::VT_CHARACTER, character);
   }
@@ -50,7 +66,7 @@ struct PlayerBuilder {
   }
   PlayerBuilder &operator=(const PlayerBuilder &);
   flatbuffers::Offset<Player> Finish() {
-    const auto end = fbb_.EndTable(start_, 2);
+    const auto end = fbb_.EndTable(start_, 4);
     auto o = flatbuffers::Offset<Player>(end);
     return o;
   }
@@ -59,9 +75,13 @@ struct PlayerBuilder {
 inline flatbuffers::Offset<Player> CreatePlayer(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint8_t id = 0,
+    uint32_t last_input_acked_packet = 0,
+    uint32_t last_input_remaining_time = 0,
     flatbuffers::Offset<nan2::game::world::Character> character = 0) {
   PlayerBuilder builder_(_fbb);
   builder_.add_character(character);
+  builder_.add_last_input_remaining_time(last_input_remaining_time);
+  builder_.add_last_input_acked_packet(last_input_acked_packet);
   builder_.add_id(id);
   return builder_.Finish();
 }

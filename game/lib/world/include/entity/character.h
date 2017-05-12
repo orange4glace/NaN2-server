@@ -26,9 +26,9 @@ namespace nan2 {
 
     const static Vector2 COLLIDER_SIZE_;
     const static float SPEED_;
-    const static float DASH_DURATION_;
+    const static int DASH_DURATION_;
     const static float DASH_DISTANCE_;
-    const static float DASH_COOLDOWN_;
+    const static int DASH_COOLDOWN_;
 
     Player* player_;
 
@@ -36,9 +36,9 @@ namespace nan2 {
     bool controllable_;
     int max_hp_;
     int hp_;
-    float dash_duration_;
+    int dash_duration_;
     float dash_distance_;
-    float dash_cooldown_;
+    int dash_cooldown_;
     bool dashing_;
 
     Weapon* weapon_;
@@ -49,7 +49,13 @@ namespace nan2 {
 
     void SaveTickData(const CharacterTickData& tick_data);
 
+    float k;
+
   public:
+
+    // tmp
+    unsigned int last_input_acked_packet_;
+    unsigned int last_input_remaining_time_;
 
     static const Vector2& COLLIDER_SIZE();
 
@@ -63,19 +69,22 @@ namespace nan2 {
     void Dash(const Vector2& angle);
     void Update();
     void FixedUpdate();
-    void Move256(unsigned char dir, float time);
+    void Move252(unsigned char dir, float time);
     void Move(float dx, float dy);
     void MoveTo(float x, float y);
+    void AddHP(int hp);
 
     // Network function
     void AddInput(PlayerInputPacket& plp);
 
     const Player& player() const;
     const Vector2& position() const;
+    int hp() const;
     CharacterSnapshot& snapshot();
-    void set_position(float x, float y);
-    void set_position(const Vector2& v);
-    void set_weapon(Weapon* weapon);
+    void position(float x, float y);
+    void position(const Vector2& v);
+    void hp(int hp);
+    void SetWeapon(Weapon* weapon);
 
     const CharacterTickData GetInterpolatedDataAt(int time) const;
 

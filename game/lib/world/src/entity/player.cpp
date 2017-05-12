@@ -18,4 +18,8 @@ namespace nan2 {
     return character_;
   }
 
+  int Player::last_input_acked_packet() const {
+    return character_.last_input_acked_packet_;
+  }
+
 }

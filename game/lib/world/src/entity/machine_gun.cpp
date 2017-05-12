@@ -4,11 +4,12 @@
 #include "entity/machine_gun_bullet.h"
 #include "world/world.h"
 #include "entity/character.h"
+#include "math_helper.h"
 
 namespace nan2 {
 
   MachineGun::MachineGun(Character* character) :
-    Weapon(character, 1, 0.2f, 1.0f, Vector2(15, 0))
+    Weapon(character, 1, 100, 1000, 30, 140, Vector2(29, 0))
     {
   }
 
@@ -16,9 +17,13 @@ namespace nan2 {
     Weapon::Update();
   }
 
-  bool MachineGun::Fire(const Vector2& angle) {
-    Bullet* bullet = new MachineGunBullet(world_, character_->position() + firing_point_, angle, 0);
+  bool MachineGun::Fire(unsigned char dir) {
+    if (!CanFire()) return false;
+    Vector2 bullet_position = GetBulletPoint(dir,character_->position());
+    Vector2 dir_vec = MathHelper::instance().normal_dir_252(dir);
+    Bullet* bullet = new MachineGunBullet(world_, bullet_position, dir_vec, character_->player().id(), 0);
     world_->AddUpdatable(bullet);
+    AfterFired();
     return true;
   }
   
