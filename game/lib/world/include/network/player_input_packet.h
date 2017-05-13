@@ -1,8 +1,7 @@
-// player_input_packet.h
 #ifndef PLAYER_INPUT_PACKET_H_
 #define PLAYER_INPUT_PACKET_H_
 
-#include "../logger/logger.h"
+#define fb nan2::game::world
 
 namespace nan2 {
 
@@ -10,11 +9,11 @@ namespace nan2 {
 
   private:
 
-  	bool is_consuming_;
+    bool is_consuming_;
     unsigned int sequence_;
-  	unsigned char move_dir_;
-  	unsigned char fire_dir_;
-  	int time_;
+    unsigned char move_dir_;
+    unsigned char fire_dir_;
+    int time_;
 
   public:
 
@@ -23,15 +22,15 @@ namespace nan2 {
     int Consume(int time);
 
     const unsigned int sequence() const;
-  	const unsigned char move_dir() const;
-  	const unsigned char fire_dir() const;
-  	const int time() const;
+    const unsigned char move_dir() const;
+    const unsigned char fire_dir() const;
+    const int time() const;
     const bool is_consuming() const;
 
     void Describe() const;
 
   };
-  
+
 }
 
 #endif

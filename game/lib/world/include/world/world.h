@@ -76,7 +76,8 @@ namespace nan2 {
     Player* GetPlayer(int id);
     std::map<int, Player*>& GetPlayers();
 
-    void OnPacketReceived(uint8_t* buffer);
+    void OnPacketReceived(uint8_t*& buffer, unsigned int& size);
+    void ParsePlayerInputPacket(uint8_t* buffer, unsigned int size);
 
     unsigned int SendPacketQueueSize() const;
     const std::vector<uint8_t> PopSendPacket();

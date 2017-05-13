@@ -12,9 +12,17 @@
 
 using boost::asio::ip::udp;
 
+struct ClientMessage {
+    uint8_t* data;
+    unsigned int size;
+
+    ~ClientMessage() {
+        delete data;
+    }
+};
+
 typedef boost::bimap<int64_t, udp::endpoint> ClientList;
 typedef ClientList::value_type Client;
-typedef uint8_t* ClientMessage;
 
 class NetworkServer {
 public:
@@ -22,7 +30,7 @@ public:
     ~NetworkServer();
 
     bool HasMessages();
-    ClientMessage PopMessage();
+    ClientMessage* PopMessage();
 
     void SendToClient(std::vector<uint8_t>& message, uint64_t clientID, bool guaranteed = false);
     void SendToAllExcept(std::vector<uint8_t>& message, uint64_t clientID, bool guaranteed = false);
@@ -51,7 +59,7 @@ private:
     void send(std::vector<uint8_t>& pmessage, udp::endpoint target_endpoint);
 
     // Incoming messages queue
-    locked_queue<ClientMessage> incomingMessages;
+    locked_queue<ClientMessage*> incomingMessages;
 
     // Clients of the server
     ClientList clients;

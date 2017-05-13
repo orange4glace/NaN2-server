@@ -4,6 +4,7 @@
 #include "logger/logger.h"
 #include "network/world_snapshot_packet_builder.h"
 #include "network/packet_parser.h"
+#include "network/player_input_packet_parser.h"
 
 #include <flatbuffers/flatbuffers.h>
 #include "flatbuffers/world_generated.h"
@@ -152,9 +153,32 @@ namespace nan2 {
     send_packet_queue_.push(packet_builder.GetBufferVector());
   }
 
-  void World::OnPacketReceived(uint8_t* buffer) {
+  void World::OnPacketReceived(uint8_t*& buffer, unsigned int& size) {
+    packet_type type = PacketParser::GetPacketType(buffer);
+
+    try {
+      switch (type) {
+        case PacketType::PING:
+          break;
+        case PacketType::PONG:
+          break;
+        case PacketType::SNAPSHOT:
+          break;
+        case PacketType::PLAYER_INPUT:
+          ParsePlayerInputPacket(buffer, size);
+          break;
+        default:
+          break;
+      }
+    } catch (const char* exp) {
+      L_DEBUG << exp;
+    }
+  }
+
+  void World::ParsePlayerInputPacket(uint8_t* buffer, unsigned int size) {
+    PlayerInputPacketParser parser(buffer, size);
     int player_id;
-    auto player_inputs = PacketParser::ParsePlayerInputPacket(buffer, player_id);
+    auto player_inputs = parser.Parse(player_id);
     Player* player = GetPlayer(player_id);
     if (player == nullptr) 
       player = AddPlayer(player_id);

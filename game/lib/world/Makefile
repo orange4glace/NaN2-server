@@ -14,7 +14,7 @@ LIB_SRCS_NAKED = world_time.cpp math_helper.cpp \
 	entity/collider_interface.cpp \
 	network/player_input_packet.cpp network/bullet_packet.cpp network/character_snapshot.cpp \
 	network/packet_builder.cpp network/world_snapshot_packet_builder.cpp \
-	network/packet_parser.cpp \
+	network/packet_parser.cpp network/player_input_packet_parser.cpp \
 	world/world.cpp world/world_map.cpp \
 	logger/logger.cpp
 TARGET_LIBS_NAKED = network_server.cpp

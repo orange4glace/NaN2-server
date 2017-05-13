@@ -25,8 +25,8 @@ int main() {
     std::chrono::high_resolution_clock::time_point last_system_time(std::chrono::high_resolution_clock::now());
 
     while (serv.HasMessages()) {
-      uint8_t* msg = serv.PopMessage();
-      world.OnPacketReceived(msg);
+      ClientMessage* msg = serv.PopMessage();
+      world.OnPacketReceived(msg->data, msg->size);
       delete msg;
     }
     world.Update();

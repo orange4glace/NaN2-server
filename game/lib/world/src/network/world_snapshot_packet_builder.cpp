@@ -7,14 +7,14 @@ namespace nan2 {
 
   WorldSnapshotPacketBuilder::WorldSnapshotPacketBuilder() :
     PacketBuilder() {
-    packet_type_ = PACKET_SNAPSHOT;
+    packet_type_ = PacketType::SNAPSHOT;
   }
 
   void WorldSnapshotPacketBuilder::Build(World& world) {
     if (!clean_) Clear();
     clean_ = false;
 
-    AppendInt(PACKET_SNAPSHOT);
+    AppendInt(PacketType::SNAPSHOT);
 
     flatbuffers::FlatBufferBuilder builder_;
 

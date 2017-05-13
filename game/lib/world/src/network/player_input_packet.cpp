@@ -1,6 +1,8 @@
 // player_input_packet.cpp
 #include "network/player_input_packet.h"
 
+#include "logger/logger.h"
+
 namespace nan2 {
 
   PlayerInputPacket::PlayerInputPacket(unsigned int sequence, int time, unsigned char move_dir, unsigned char fire_dir) :

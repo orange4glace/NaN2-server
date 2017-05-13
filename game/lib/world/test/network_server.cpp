@@ -30,9 +30,12 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
     {
         try {
             get_client_id(remote_endpoint);
-            uint8_t* message = new uint8_t[1024];
+            uint8_t* message = new uint8_t[bytes_transferred];
             std::memcpy(message, recv_buffer.data(), bytes_transferred);
-            incomingMessages.push(message);
+            ClientMessage* cm = new ClientMessage();
+            cm->data = message;
+            cm->size = bytes_transferred;
+            incomingMessages.push(cm);
             receivedBytes += bytes_transferred;
             receivedMessages++;
         }
@@ -112,7 +115,7 @@ void NetworkServer::SendToAll(std::vector<uint8_t>& buffer, bool guaranteed)
         send(buffer, client.right);
 };
 
-ClientMessage NetworkServer::PopMessage() {
+ClientMessage* NetworkServer::PopMessage() {
     return incomingMessages.pop();
 }
 
