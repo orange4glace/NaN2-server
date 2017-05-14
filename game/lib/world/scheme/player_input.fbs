@@ -1,0 +1,10 @@
+namespace nan2.game.world;
+
+table PlayerInput {
+  id:int;
+  move_dir:ubyte;
+  fire_dir:ubyte;
+  time:int;
+}
+
+root_type PlayerInput;

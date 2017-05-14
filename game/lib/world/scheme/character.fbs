@@ -1,0 +1,10 @@
+include "bullet.fbs";
+
+namespace nan2.game.world;
+
+table Character {
+  pos:Vec2;
+  hp:int;
+  bullets:[Bullet];
+  dashing_time:int;
+}

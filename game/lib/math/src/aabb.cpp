@@ -3,6 +3,8 @@
 
 #include <math.h>
 
+#include <iostream>
+
 namespace nan2 {
 
   AABB::AABB(const Rect& rect) :
@@ -27,12 +29,16 @@ namespace nan2 {
   	rect_ = r;
   }
 
-  float AABB::SweptAABB(const AABB& src, const Vector2& srcDelta, const AABB& tar, const Vector2& tarDelta) {
+  float AABB::SweptAABB(const AABB& src, const Vector2& srcDelta, const AABB& tar, const Vector2& tarDelta, bool& out_collided) {
+    out_collided = false;
     Rect minkowski = tar.rect().MinkowskiDifference(src.rect());
     Vector2 relative_delta = srcDelta - tarDelta;
 
     float h = AABB::GetRayIntersectionFraction(minkowski, Vector2::ZERO, relative_delta);
-    if (h < INFINITY) return h;
+    if (h < INFINITY) {
+      out_collided = true;
+      return h;
+    }
     else return 1;
   }
 
@@ -62,6 +68,7 @@ namespace nan2 {
 
     float u = numerator / denominator;
     float t = oAoB.cross(s) / denominator;
+
     if ((t >= 0) && (t <= 1) && (u >= 0) && (u <= 1)) return t;
     return INFINITY;
   }
@@ -80,5 +87,10 @@ namespace nan2 {
     x = AABB::GetRayIntersectionFractionOfFirstRay(o, e, Vector2(b_ur.x(), b_ll.y()), Vector2(b_ll.x(), b_ll.y()));
     if (x < minv) minv = x;
     return minv;
+  }
+
+  std::ostream& operator<<(std::ostream& os, const AABB& aabb) {
+      os << "[AABB] " << aabb.rect_;
+      return os;
   }
 }

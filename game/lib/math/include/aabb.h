@@ -26,10 +26,12 @@ namespace nan2 {
     void set_rect(const Rect& r);
 
     // Swept AABB collision detection for fast objects.
-    static float SweptAABB(const AABB& r1, const Vector2& r1v, const AABB& r2, const Vector2& r2v);
+    static float SweptAABB(const AABB& r1, const Vector2& r1v, const AABB& r2, const Vector2& r2v, bool& out_collided);
     
     // Simple AABB collsion detection for regular speed objects.
     static Vector2 SimpleAABB(const AABB& r1, const AABB& r2);
+
+    friend std::ostream& operator<<(std::ostream& os, const AABB& v);
 
   };
 

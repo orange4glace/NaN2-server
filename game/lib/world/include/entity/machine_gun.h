@@ -15,7 +15,7 @@ namespace nan2 {
     MachineGun(Character* character);
 
     void Update();
-    void Fire(const Vector2& angle);
+    bool Fire(unsigned char dir);
 
   };
   

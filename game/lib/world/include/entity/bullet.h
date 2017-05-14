@@ -12,12 +12,23 @@ namespace nan2 {
   protected:
 
     int collision_mask_;
+    int damage_;
+    int player_id_;
 
-    Bullet(World* world_, const int collision_mask_);
+    int created_time_;
+    int alive_time_;
+    int interpolation_time_;
+
+    Bullet(World* world_, int player_id_, int collision_mask_);
 
   public :
 
     virtual const AABB collider() const = 0;
+
+    int player_id() const;
+
+    void OnCreate();
+    void Update();
 
   };
   

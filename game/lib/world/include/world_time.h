@@ -12,23 +12,22 @@ namespace nan2 {
 
     // times will be updated every first of the update by World object.
     static float delta_time_;
-    static float current_time_;
-
+    static int idelta_time_;
+    static int current_time_;
+    static int fixed_delta_time_;
+    static int current_fixed_time_;
+    static float extra_delta_time_;
 
   public:
 
-    static inline void set_delta_time(float dt) {
-      Time::delta_time_ = dt;
-    }
-    static inline float delta_time() {
-      return Time::delta_time_;
-    }
-    static inline void set_current_time(float t) {
-      Time::current_time_ = t;
-    }
-    static inline float current_time() {
-      return Time::current_time_;
-    }
+    static void delta_time(float dt);
+    static int delta_time();
+    static void current_time(int t);
+    static int current_time();
+    static void fixed_delta_time(int t);
+    static int fixed_delta_time();
+    static void current_fixed_time(int t);
+    static int current_fixed_time();
 
   };
 

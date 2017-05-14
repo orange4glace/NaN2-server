@@ -3,6 +3,8 @@
 
 #include "entity/character.h"
 
+#include "logger/logger.h"
+
 namespace nan2 {
   
   CharacterTickData::CharacterTickData(int time, const Vector2& position, bool is_alive) :
@@ -10,7 +12,6 @@ namespace nan2 {
     position_(position),
     collider_(Rect(position.x(), position.y(), Character::COLLIDER_SIZE().x(), Character::COLLIDER_SIZE().y())),
     is_alive_(is_alive) {
-
   }
 
   const int CharacterTickData::time() const {
@@ -40,6 +41,11 @@ namespace nan2 {
     if (b.time() <= t) return b;
     float k = (t - a.time()) / (b.time() - a.time());
     return CharacterTickData(t, (b.position() - a.position()) * k + a.position(), a.is_alive());
+  }
+
+  std::ostream& operator<<(std::ostream& os, const CharacterTickData& tick_data) {
+      os << "[TickData] " << tick_data.time_ << " " << tick_data.position_;
+      return os;
   }
 
 }

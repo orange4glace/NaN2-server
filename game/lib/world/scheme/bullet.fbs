@@ -1,0 +1,12 @@
+namespace nan2.game.world;
+
+struct Vec2 {
+  x: float;
+  y: float;
+}
+
+table Bullet {
+  type:ubyte;
+  pos:Vec2;
+  time:float;
+}
