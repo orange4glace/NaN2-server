@@ -15,5 +15,13 @@ namespace nan2 {
   World& Entity::world() {
     return *world_;
   }
+
+  int Entity::layer() const {
+    return layer_;
+  }
+
+  void Entity::layer(int value) {
+    layer_ = value;
+  }
   
 }

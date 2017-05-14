@@ -35,6 +35,8 @@ namespace nan2 {
     // Get closest point from the given point
     Vector2 ClosestPointOnBoundsToPoint(const Vector2& point) const;
 
+    friend std::ostream& operator<<(std::ostream& os, const Rect& v);
+
   };
 
 };

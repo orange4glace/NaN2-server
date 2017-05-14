@@ -15,9 +15,9 @@ namespace nan2 {
     Entity(World* world);
 
   protected:
-    
+
     World* world_;
-    short layer;
+    int layer_;
 
   public:
     
@@ -25,6 +25,9 @@ namespace nan2 {
     virtual void OnCreate() {};
     virtual void OnDestroy() {};
     virtual void Destroy() = 0;
+
+    int layer() const;
+    void layer(int value);
 
   };
   

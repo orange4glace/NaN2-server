@@ -86,11 +86,17 @@ namespace nan2 {
     return x_ * vec.y() - y_ * vec.x();
   }
 
+  // Static member
   const Vector2 Vector2::ZERO = Vector2(0, 0);
 
-  Vector2 FromAngle(float angle) {
+  // Static function
+  Vector2 Vector2::FromAngle(float angle) {
     float rad = E_PI / 180 * angle;
     return Vector2(cos(rad), sin(rad));
   }
 
+  std::ostream& operator<<(std::ostream& os, const Vector2& v) {
+      os << "(" << v.x_ << ", " << v.y_ << ")\n";
+      return os;
+  }
 }
