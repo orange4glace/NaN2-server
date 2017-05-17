@@ -19,6 +19,6 @@ SUB_DIRS_STRIPED = math world
 NAN2_LIBS += Math World
 
 # external libs
-EXT_LIBS +=
+EXT_LIBS += boost_system boost_thread cpp_redis tacopie
 
 include $(PROJ_ROOT)/includePost.mk

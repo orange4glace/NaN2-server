@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <random>
 
 #include <mgne/mgne.hpp>
@@ -19,8 +20,9 @@
 #include <nan2/math/vector2.h>
 
 #include "protocol.hpp"
+#include "game.hpp"
 
 /* git ignored */
-#include "../../include/server_db_info.h"
+#include "../../include/server_db_infos.h"
 
 #endif
