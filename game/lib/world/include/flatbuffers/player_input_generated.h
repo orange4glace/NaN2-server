@@ -17,7 +17,8 @@ struct PlayerInput FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_SEQUENCE = 4,
     VT_MOVE_DIR = 6,
     VT_FIRE_DIR = 8,
-    VT_TIME = 10
+    VT_DASH_DIR = 10,
+    VT_TIME = 12
   };
   uint32_t sequence() const {
     return GetField<uint32_t>(VT_SEQUENCE, 0);
@@ -28,6 +29,9 @@ struct PlayerInput FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   uint8_t fire_dir() const {
     return GetField<uint8_t>(VT_FIRE_DIR, 0);
   }
+  uint8_t dash_dir() const {
+    return GetField<uint8_t>(VT_DASH_DIR, 0);
+  }
   int32_t time() const {
     return GetField<int32_t>(VT_TIME, 0);
   }
@@ -36,6 +40,7 @@ struct PlayerInput FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_SEQUENCE) &&
            VerifyField<uint8_t>(verifier, VT_MOVE_DIR) &&
            VerifyField<uint8_t>(verifier, VT_FIRE_DIR) &&
+           VerifyField<uint8_t>(verifier, VT_DASH_DIR) &&
            VerifyField<int32_t>(verifier, VT_TIME) &&
            verifier.EndTable();
   }
@@ -53,6 +58,9 @@ struct PlayerInputBuilder {
   void add_fire_dir(uint8_t fire_dir) {
     fbb_.AddElement<uint8_t>(PlayerInput::VT_FIRE_DIR, fire_dir, 0);
   }
+  void add_dash_dir(uint8_t dash_dir) {
+    fbb_.AddElement<uint8_t>(PlayerInput::VT_DASH_DIR, dash_dir, 0);
+  }
   void add_time(int32_t time) {
     fbb_.AddElement<int32_t>(PlayerInput::VT_TIME, time, 0);
   }
@@ -62,7 +70,7 @@ struct PlayerInputBuilder {
   }
   PlayerInputBuilder &operator=(const PlayerInputBuilder &);
   flatbuffers::Offset<PlayerInput> Finish() {
-    const auto end = fbb_.EndTable(start_, 4);
+    const auto end = fbb_.EndTable(start_, 5);
     auto o = flatbuffers::Offset<PlayerInput>(end);
     return o;
   }
@@ -73,10 +81,12 @@ inline flatbuffers::Offset<PlayerInput> CreatePlayerInput(
     uint32_t sequence = 0,
     uint8_t move_dir = 0,
     uint8_t fire_dir = 0,
+    uint8_t dash_dir = 0,
     int32_t time = 0) {
   PlayerInputBuilder builder_(_fbb);
   builder_.add_time(time);
   builder_.add_sequence(sequence);
+  builder_.add_dash_dir(dash_dir);
   builder_.add_fire_dir(fire_dir);
   builder_.add_move_dir(move_dir);
   return builder_.Finish();

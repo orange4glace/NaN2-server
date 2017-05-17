@@ -21,6 +21,7 @@ namespace nan2 {
 
     virtual const AABB collider() const;
 
+    void Update();
     void FixedUpdate();
 
   };

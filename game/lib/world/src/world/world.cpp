@@ -5,6 +5,8 @@
 #include "network/world_snapshot_packet_builder.h"
 #include "network/packet_parser.h"
 #include "network/player_input_packet_parser.h"
+#include "network/pong_packet_parser.h"
+#include "network/ping_packet_builder.h"
 
 #include <flatbuffers/flatbuffers.h>
 #include "flatbuffers/world_generated.h"
@@ -16,6 +18,8 @@ namespace nan2 {
   World::World() : 
     last_system_time_(std::chrono::high_resolution_clock::now()),
     snapshot_send_timer_(0),
+    ping_send_timer_(0),
+    ping_seq_(0),
     last_snapshot_sent_time_(Time::current_time()) {
     world_map_ = new WorldMap();
   }
@@ -41,6 +45,7 @@ namespace nan2 {
 
     int dt = Time::delta_time();
     snapshot_send_timer_ += dt;
+    ping_send_timer_ += dt;
 
     int current_fixed_time = Time::current_time();
     Time::current_time(Time::current_time() + dt);
@@ -73,11 +78,16 @@ namespace nan2 {
 
     DestroyUpdatables();
 
-    if (snapshot_send_timer_ > 33) {
+    if (snapshot_send_timer_ > 100) {
       snapshot_send_timer_ = 0;
       last_snapshot_sent_time_ = Time::current_time();
       TakeSnapshot();
     }
+    if (ping_send_timer_ >= 200) {
+      ping_send_timer_ = 0;
+      SendPingPacket();
+    }
+
   }
 
   void World::FixedUpdate() {
@@ -127,10 +137,10 @@ namespace nan2 {
   Player* World::AddPlayer(int id) {
     if (players_.count(id)) return players_[id];
     Player* player = new Player(this, id);
-    players_.insert({id, player});
+    players_[id] = player;
     AddUpdatable(&player->character());
 
-    L_DEBUG << "Added Player " << id;
+    L_DEBUG << "Added Player " << id << " " << players_.count(id);
 
     return player;
   }
@@ -150,10 +160,11 @@ namespace nan2 {
   void World::TakeSnapshot() {
     WorldSnapshotPacketBuilder packet_builder;
     packet_builder.Build(*this);
-    send_packet_queue_.push(packet_builder.GetBufferVector());
+    OutPacket packet(packet_builder.GetBufferVector(), OutPacket::BROADCAST);
+    send_packet_queue_.push(packet);
   }
 
-  void World::OnPacketReceived(uint8_t*& buffer, unsigned int& size) {
+  void World::OnPacketReceived(uint8_t*& buffer, unsigned int& size, uint64_t client_id) {
     packet_type type = PacketParser::GetPacketType(buffer);
 
     try {
@@ -161,11 +172,12 @@ namespace nan2 {
         case PacketType::PING:
           break;
         case PacketType::PONG:
+          ParsePongPacket(buffer, size);
           break;
         case PacketType::SNAPSHOT:
           break;
         case PacketType::PLAYER_INPUT:
-          ParsePlayerInputPacket(buffer, size);
+          ParsePlayerInputPacket(buffer, size, client_id);
           break;
         default:
           break;
@@ -175,22 +187,45 @@ namespace nan2 {
     }
   }
 
-  void World::ParsePlayerInputPacket(uint8_t* buffer, unsigned int size) {
+  void World::ParsePlayerInputPacket(uint8_t* buffer, unsigned int size, uint64_t client_id) {
     PlayerInputPacketParser parser(buffer, size);
     int player_id;
     auto player_inputs = parser.Parse(player_id);
     Player* player = GetPlayer(player_id);
+    cpmap_[player_id] = client_id;
     if (player == nullptr) 
       player = AddPlayer(player_id);
     for (auto input : player_inputs)
       player->character().AddInput(input);
   }
 
+  void World::ParsePongPacket(uint8_t* buffer, unsigned int size) {
+    PongPacketParser parser(buffer, size);
+    int player_id;
+    int seq = parser.Parse(player_id);
+    Player* player = GetPlayer(player_id);
+    if (player == nullptr) return;
+    player->OnPongPacketReceived(seq);
+  }
+
+  void World::SendPingPacket() {
+    int seq = ping_seq_++;
+    for (auto player_item : players_) {
+      PingPacketBuilder builder;
+      auto player_ = player_item.second;
+      builder.Build(seq, player_->ping());
+      
+      OutPacket packet(builder.GetBufferVector(), OutPacket::UNICAST, cpmap_[player_->id()]);
+      player_->PushPingPacket(seq, Time::current_time());
+      send_packet_queue_.push(packet);
+    }
+  }
+
   unsigned int World::SendPacketQueueSize() const {
     return send_packet_queue_.size();
   }
 
-  const std::vector<uint8_t> World::PopSendPacket() {
+  const OutPacket World::PopSendPacket() {
     auto ret = send_packet_queue_.front();
     send_packet_queue_.pop();
     return ret;

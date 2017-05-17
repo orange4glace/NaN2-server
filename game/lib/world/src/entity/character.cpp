@@ -22,8 +22,8 @@ namespace nan2 {
     return Character::COLLIDER_SIZE_;
   }
   const float Character::SPEED_         = 115.0f;
-  const int   Character::DASH_DURATION_ = 500;
-  const float Character::DASH_DISTANCE_ = 100.0f;
+  const int   Character::DASH_DURATION_ = 300;
+  const float Character::DASH_DISTANCE_ = 70.0f;
   const int   Character::DASH_COOLDOWN_ = 1000;
 
   Character::Character(Player* player) :
@@ -32,10 +32,12 @@ namespace nan2 {
     weapon_(nullptr),
     last_input_acked_packet_(0),
     dash_cooldown_(0),
+    dash_dir_(0),
+    dash_time_(0),
     dashing_(false) {
       update_order_ = 1;
       SetWeapon(new MachineGun(this));
-      hp_ = max_hp_ = 10;
+      hp_ = max_hp_ = 50;
   }
 
   const AABB Character::collider() const {
@@ -50,12 +52,6 @@ namespace nan2 {
     if (weapon_ == nullptr) return false;
     if (dir >= 252) return false;
     return weapon_->Fire(dir);
-  }
-
-  void Character::Dash(const Vector2& angle) {
-    dash_duration_ = Character::DASH_DURATION_;
-    dash_cooldown_ = Character::DASH_COOLDOWN_;
-    dashing_ = true;
   }
 
   void Character::Update() {
@@ -77,7 +73,13 @@ namespace nan2 {
       last_input_acked_packet_ = packet.sequence();
       last_input_remaining_time_ = packet.time();
 
-      Move252(packet.move_dir(), fconsuming_time);
+      if (packet.dash_dir() < 252) {
+        // Player dash command
+        Dash(packet.dash_dir());
+      }
+      if (!dashing_)
+        Move252(packet.move_dir(), fconsuming_time);
+      UpdateDashState(consuming_time);
 
       if (is_fresh) {
         bool fire_result = Fire(packet.fire_dir());
@@ -87,10 +89,6 @@ namespace nan2 {
           snapshot_.AddBulletPacket(bulletPacket);
         }
       }
-      snapshot_.SetWeaponMagazine(weapon_->magazine());
-      snapshot_.SetWeaponAmmo(weapon_->ammo());
-      snapshot_.SetWeaponCooldown(weapon_->cooldown());
-      snapshot_.SetWeaponReloadTime(weapon_->reload_time());
 
       if (given_time <= 0) break;
       else {
@@ -98,17 +96,14 @@ namespace nan2 {
       }
     }
 
-    DecreaseByDT(dash_cooldown_);
-    DecreaseByDT(dash_duration_);
-    if (dashing_) {
-      float dash_t = std::max(Time::delta_time(), dash_duration_);
-      float dd = (dash_t / Character::DASH_DURATION_);
-      if (dash_duration_ == 0) {
-        dashing_ = false;
-      }
-    }
+    snapshot_.SetWeaponMagazine(weapon_->magazine());
+    snapshot_.SetWeaponAmmo(weapon_->ammo());
+    snapshot_.SetWeaponCooldown(weapon_->cooldown());
+    snapshot_.SetWeaponReloadTime(weapon_->reload_time());
     snapshot_.SetPosition(position_);
-    snapshot_.SetDashingDuration(0);
+    snapshot_.SetDashTime(dash_time_);
+    snapshot_.SetDashCooldown(dash_cooldown_);
+    snapshot_.SetDashDir(dash_dir_);
     CharacterTickData tickData(Time::current_fixed_time(), position_, true);
     SaveTickData(tickData);
   }
@@ -133,6 +128,31 @@ namespace nan2 {
     }
   }
 
+  void Character::Dash(unsigned char dir) {
+    if (dir >= 252) return;
+    if (dash_cooldown_) return;
+    dashing_ = true;
+    dash_time_ = 1;
+    dash_dir_ = dir;
+    dash_cooldown_ = Character::DASH_COOLDOWN_;
+  }
+
+  void Character::UpdateDashState(int dt) {
+    DecreaseByDT(dash_cooldown_);
+    if (!dashing_) return;
+    dash_time_ += dt;
+    int dash_update_time = dt;
+    if (dash_time_ >= Character::DASH_DURATION_)
+      dash_update_time = dt - (dash_time_ - Character::DASH_DURATION_);
+    float dd = Character::DASH_DISTANCE_ * ((float)dash_update_time / (Character::DASH_DURATION_));
+    Vector2 vdd = MathHelper::instance().normal_dir_252(dash_dir_) * dd;
+    Move(vdd.x(), vdd.y());
+    if (dash_time_ > Character::DASH_DURATION_) {
+      dash_time_ = 0;
+      dashing_ = false;
+    }
+  }
+
   void Character::AddInput(PlayerInputPacket& plp) {
     packets_.push_back(plp);
   }
@@ -153,6 +173,10 @@ namespace nan2 {
 
   int Character::hp() const {
     return hp_;
+  }
+
+  bool Character::is_dashing() const {
+    return dash_time_ > 0;
   }
 
   CharacterSnapshot& Character::snapshot() {
@@ -182,10 +206,8 @@ namespace nan2 {
   const CharacterTickData Character::GetInterpolatedDataAt(int time) const {
     CharacterTickData q(time, Vector2(0, 0), true);
     auto it = std::lower_bound(history_.begin(), history_.end(), q);
-    L_DEBUG << "Get interpolated " << time << " (lower bound = " << *it;
     if (it->time() == time) return *it;
     if (it == history_.begin()) return *it;
-    L_DEBUG << "Interpolate " << time << " " << *std::prev(it) << " " << *it << " (last = " << *history_.rbegin() << ")";
     return CharacterTickData::Interpolate(*std::prev(it), *it, time);
   }
   

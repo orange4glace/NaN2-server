@@ -7,6 +7,8 @@
 #include "../entity/player.h"
 #include "../entity/character.h"
 
+#include "../network/out_packet.h"
+
 #include "../logger/logger.h"
 
 #include <vector>
@@ -34,6 +36,8 @@ namespace nan2 {
 
     int snapshot_send_timer_;
     int last_snapshot_sent_time_;
+    int ping_send_timer_;
+    int ping_seq_;
 
     // Static World Map data
     WorldMap *world_map_;
@@ -49,9 +53,13 @@ namespace nan2 {
 
     void TakeSnapshot();
 
-    std::queue< std::vector<uint8_t> > send_packet_queue_;
+    std::queue<OutPacket> send_packet_queue_;
 
   public:
+
+    /*** For Dev ***/
+    std::map<uint64_t, int> cpmap_;
+    /*** For Dev ***/
 
     World();
     World(WorldMap* world_map);
@@ -76,11 +84,14 @@ namespace nan2 {
     Player* GetPlayer(int id);
     std::map<int, Player*>& GetPlayers();
 
-    void OnPacketReceived(uint8_t*& buffer, unsigned int& size);
-    void ParsePlayerInputPacket(uint8_t* buffer, unsigned int size);
+    void OnPacketReceived(uint8_t*& buffer, unsigned int& size, uint64_t client_id);
+    void ParsePlayerInputPacket(uint8_t* buffer, unsigned int size, uint64_t client_id);
+    void ParsePongPacket(uint8_t* buffer, unsigned int size);
+
+    void SendPingPacket();
 
     unsigned int SendPacketQueueSize() const;
-    const std::vector<uint8_t> PopSendPacket();
+    const OutPacket PopSendPacket();
 
     int last_snapshot_sent_time() const;
 
