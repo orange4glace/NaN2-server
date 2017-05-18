@@ -3,6 +3,8 @@
 #define MAX_SESSION_CAPACITY 500
 #define    MAX_GAME_CAPACITY 500
 
+#define WORLD_THREAD         3
+
 using namespace nan2;
 
 cpp_redis::redis_client redis_client;
@@ -42,7 +44,13 @@ int admit_handler(mgne::Packet &p)
       // deal with other game modes..
     }
   }
-  it->second->EnterGame(p.GetSessionId());
+
+  if (it->second->EnterGame(p.GetSessionId()) == 0) {
+    // throw update function
+    // to queue_[game_num % NUM_WORLD_THREAD]
+  }
+
+  // TODO : need to reply
   game_map.Unlock();
 
   std::cout << "token : " << token << ", game_num : " << game_num << std::endl;

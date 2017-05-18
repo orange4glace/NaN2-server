@@ -11,11 +11,12 @@
 #include <mgne/pattern/thread_safe.hpp>
 
 #include "../../include/game_info.hpp"
+#include "../lib/world/include/world/world.h"
 
 namespace nan2 {
 class InterfaceGame {
 public:
-  virtual bool EnterGame(int client_id) = 0;
+  virtual int EnterGame(int client_id) = 0;
 
   virtual void SendToClient(char* message, int client_id) = 0;
   virtual void SendToAllExcept(char* message, int client_id) = 0;
@@ -32,11 +33,15 @@ public:
   Game(mgne::udp::Server* server) 
     : server_(server)
   {
+    num_people_ = 0;
   }
 
-  bool EnterGame(int client_id)
+  int EnterGame(int client_id)
   {
-    return true;
+    if (num_people_ == sizes[mode]) return -1;
+    clients_[num_people_++] = client_id;
+    if (num_people_ == sizes[mode]) return 0;
+    return 1;
   }
 
   void SendToClient(char* message, int client_id)
@@ -51,14 +56,19 @@ public:
   {
   }
 
+  World& GetWorld() { return world_; }
+
 private:
-  std::array<int, sizes[mode]> clients_;
   mgne::udp::Server* server_;
+  World world_;
+
+  std::array<int, sizes[mode]> clients_;
+  int num_people_;
 };
 
 class GameMap : mgne::pattern::ThreadSafe {
 private:
-  typedef std::unique_ptr<InterfaceGame> game_ptr;
+  typedef std::shared_ptr<InterfaceGame> game_ptr;
   typedef std::unordered_map<int, game_ptr> map; 
 
 public: 
@@ -74,7 +84,7 @@ public:
   // how about Erase?
 
 private:
-  std::unordered_map<int, std::unique_ptr<InterfaceGame>> map_;
+  std::unordered_map<int, game_ptr> map_;
 };
 }
 
