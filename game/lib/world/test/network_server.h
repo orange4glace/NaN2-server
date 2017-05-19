@@ -6,13 +6,16 @@
 #include <boost/asio.hpp>
 #include <boost/bimap.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <string>
 #include <array>
+#include <map>
 
 using boost::asio::ip::udp;
 
 struct ClientMessage {
+    uint64_t client_id;
     uint8_t* data;
     unsigned int size;
 
@@ -21,7 +24,7 @@ struct ClientMessage {
     }
 };
 
-typedef boost::bimap<int64_t, udp::endpoint> ClientList;
+typedef boost::bimap<uint64_t, udp::endpoint> ClientList;
 typedef ClientList::value_type Client;
 
 class NetworkServer {
@@ -32,9 +35,9 @@ public:
     bool HasMessages();
     ClientMessage* PopMessage();
 
-    void SendToClient(std::vector<uint8_t>& message, uint64_t clientID, bool guaranteed = false);
-    void SendToAllExcept(std::vector<uint8_t>& message, uint64_t clientID, bool guaranteed = false);
-    void SendToAll(std::vector<uint8_t>& message, bool guaranteed = false);
+    void SendToClient(const std::vector<uint8_t>& message, uint64_t clientID, bool guaranteed = false);
+    void SendToAllExcept(const std::vector<uint8_t>& message, uint64_t clientID, bool guaranteed = false);
+    void SendToAll(const std::vector<uint8_t>& message, bool guaranteed = false);
 
     inline uint64_t GetStatReceivedMessages() {return receivedMessages;};
     inline uint64_t GetStatReceivedBytes()    {return receivedBytes;};
@@ -56,7 +59,7 @@ private:
     void run_service();
     uint64_t get_client_id(udp::endpoint endpoint);
 
-    void send(std::vector<uint8_t>& pmessage, udp::endpoint target_endpoint);
+    void send(const std::vector<uint8_t>& pmessage, udp::endpoint target_endpoint);
 
     // Incoming messages queue
     locked_queue<ClientMessage*> incomingMessages;

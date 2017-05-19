@@ -6,38 +6,13 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+#include "vec2_generated.h"
+
 namespace nan2 {
 namespace game {
 namespace world {
 
-struct Vec2;
-
 struct Bullet;
-
-MANUALLY_ALIGNED_STRUCT(4) Vec2 FLATBUFFERS_FINAL_CLASS {
- private:
-  float x_;
-  float y_;
-
- public:
-  Vec2() {
-    memset(this, 0, sizeof(Vec2));
-  }
-  Vec2(const Vec2 &_o) {
-    memcpy(this, &_o, sizeof(Vec2));
-  }
-  Vec2(float _x, float _y)
-      : x_(flatbuffers::EndianScalar(_x)),
-        y_(flatbuffers::EndianScalar(_y)) {
-  }
-  float x() const {
-    return flatbuffers::EndianScalar(x_);
-  }
-  float y() const {
-    return flatbuffers::EndianScalar(y_);
-  }
-};
-STRUCT_END(Vec2, 8);
 
 struct Bullet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {

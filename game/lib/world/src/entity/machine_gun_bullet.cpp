@@ -15,14 +15,17 @@ namespace nan2 {
 
   MachineGunBullet::MachineGunBullet(World* world, const Vector2& position, const Vector2& angle, int player_id, int collision_mask) :
     Bullet(world, player_id, collision_mask),
-    position_(position),
     angle_(angle),
-    SPEED_(10.0f) {
+    SPEED_(250.0f) {
+      position_ = position;
       damage_ = 2;
   }
 
   const AABB MachineGunBullet::collider() const {
     return AABB(Rect(position_.x(), position_.y(), 3.0f, 3.0f));
+  }
+
+  void MachineGunBullet::Update() {
   }
 
   void MachineGunBullet::FixedUpdate() {
@@ -33,8 +36,9 @@ namespace nan2 {
     Vector2 dv = angle_ * SPEED_ * (Time::fixed_delta_time() / 1000.0f);
     
     const void* rCollider = nullptr;
-
     Character* rCharacter = nullptr;
+    RootBox* rRootBox = nullptr;
+
     float rf = INFINITY;
     for (auto player : players) {
       Character& character = player.second->character();
@@ -43,7 +47,6 @@ namespace nan2 {
       if (player.second->id() == player_id_) continue;
       // Get interpolated target data relative to bullet initiator
       CharacterTickData td = character.GetInterpolatedDataAt(Time::current_fixed_time() - interpolation_time_);
-      L_DEBUG << "chk " << player.second->id() << " " << thisCollider << " " << td.collider();
       const AABB& collider = td.collider();
       bool collided;
       float cf = AABB::SweptAABB(thisCollider, dv, collider, Vector2::ZERO, collided);
@@ -51,6 +54,20 @@ namespace nan2 {
       if (cf < rf) {
         rCharacter = &character;
         rCollider = &character;
+        rf = cf;
+      }
+    }
+
+    auto root_boxes = world_->root_boxes();
+
+    for (auto root_box : root_boxes) {
+      bool collided;
+      const AABB& collider = root_box->collider();
+      float cf = AABB::SweptAABB(thisCollider, dv, collider, Vector2::ZERO, collided);
+      if (!collided) continue;
+      if (cf < rf) {
+        rRootBox = root_box;
+        rCollider = root_box;
         rf = cf;
       }
     }
@@ -71,12 +88,18 @@ namespace nan2 {
     if (rCollider != nullptr) {
       if (rCollider == rCharacter) {
         L_DEBUG << "#### Collision detected " << rCharacter->player().id();
-        rCharacter->AddHP(-damage_);
+        if (!rCharacter->is_dashing()) {
+          rCharacter->AddHP(-damage_);
+          Destroy();
+        }
+      }
+      else if (rCollider == rRootBox) {
+        L_DEBUG << "#### Collision detected Root box";
+        Destroy();
       }
       else if (rCollider == rTile) {
-
+        Destroy();
       }
-      Destroy();
     }
     else {
       position_ += dv;

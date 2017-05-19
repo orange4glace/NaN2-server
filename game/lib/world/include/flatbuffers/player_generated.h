@@ -8,6 +8,7 @@
 
 #include "bullet_generated.h"
 #include "character_generated.h"
+#include "vec2_generated.h"
 
 namespace nan2 {
 namespace game {

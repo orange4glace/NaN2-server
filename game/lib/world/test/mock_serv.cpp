@@ -7,6 +7,7 @@
 #include <chrono>
 #include "network_server.h"
 #include <nan2/world/world/world.h>
+#include <nan2/world/network/out_packet.h>
 #include <nan2/world/world_time.h>
 
 #include <boost/log/trivial.hpp>
@@ -20,19 +21,22 @@ int main() {
 
   World world;
 
-
   while (1) {
     std::chrono::high_resolution_clock::time_point last_system_time(std::chrono::high_resolution_clock::now());
 
     while (serv.HasMessages()) {
       ClientMessage* msg = serv.PopMessage();
-      world.OnPacketReceived(msg->data, msg->size);
+    //  world.OnPacketReceived(msg->data, msg->size, msg->client_id);
       delete msg;
     }
     world.Update();
     while (world.SendPacketQueueSize()) {
-      auto buffer = world.PopSendPacket();
-      serv.SendToAll(buffer);
+      OutPacket out_packet = world.PopSendPacket();
+      if (out_packet.type() == OutPacket::BROADCAST)
+        serv.SendToAll(out_packet.data());
+      else if (out_packet.type() == OutPacket::UNICAST) {
+        serv.SendToClient(out_packet.data(), out_packet.receiver());
+      }
     }
 
     std::chrono::high_resolution_clock::time_point cur_system_time(std::chrono::high_resolution_clock::now());

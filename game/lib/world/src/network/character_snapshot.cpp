@@ -13,8 +13,16 @@ namespace nan2 {
     position_ = position;
   }
 
-  void CharacterSnapshot::SetDashingDuration(int dashing_duration) {
-    dashing_duration_ = dashing_duration;
+  void CharacterSnapshot::SetDashTime(int dash_time) {
+    dash_time_ = dash_time;
+  }
+
+  void CharacterSnapshot::SetDashCooldown(int dash_cooldown) {
+    dash_cooldown_ = dash_cooldown;
+  }
+
+  void CharacterSnapshot::SetDashDir(unsigned char dash_dir) {
+    dash_dir_ = dash_dir;
   }
 
   void CharacterSnapshot::SetWeaponMagazine(int weapon_magazine) {
@@ -37,42 +45,51 @@ namespace nan2 {
     snapshot_time_ += dt;
   }
 
-  const int CharacterSnapshot::snapshot_time() {
+  int CharacterSnapshot::snapshot_time() const{
     return snapshot_time_;
   }
 
-  const std::vector<BulletPacket>& CharacterSnapshot::bullet_packets() {
+  const std::vector<BulletPacket>& CharacterSnapshot::bullet_packets() const {
     return bullet_packets_;
   }
 
-  const Vector2& CharacterSnapshot::position() {
+  const Vector2& CharacterSnapshot::position() const {
     return position_;
   }
 
-  const int CharacterSnapshot::dashing_duration() {
-    return dashing_duration_;
+  int CharacterSnapshot::dash_time() const {
+    return dash_time_;
   }
 
-  const int CharacterSnapshot::weapon_magazine() {
+  int CharacterSnapshot::dash_cooldown() const {
+    return dash_cooldown_;
+  }
+
+  unsigned char CharacterSnapshot::dash_dir() const {
+    return dash_dir_;
+  }
+
+  int CharacterSnapshot::weapon_magazine() const {
     return weapon_magazine_;
   }
 
-  const int CharacterSnapshot::weapon_ammo() {
+  int CharacterSnapshot::weapon_ammo() const {
     return weapon_ammo_;
   }
 
-  const int CharacterSnapshot::weapon_cooldown() {
+  int CharacterSnapshot::weapon_cooldown() const {
     return weapon_cooldown_;
   }
 
-  const int CharacterSnapshot::weapon_reload_time() {
+  int CharacterSnapshot::weapon_reload_time() const {
     return weapon_reload_time_;
   }
 
   void CharacterSnapshot::Clear() {
     bullet_packets_.clear();
     snapshot_time_ = 0;
-    dashing_duration_  = 0;
+    dash_time_  = 0;
+    dash_dir_ = 255;
     position_ = Vector2::ZERO;
   }
 

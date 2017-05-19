@@ -6,6 +6,11 @@
 #include "world_map.h"
 #include "../entity/player.h"
 #include "../entity/character.h"
+#include "../entity/root_box.h"
+#include "../entity/dropped_item.h"
+
+#include "../network/world_guaranteed_packet_builder.h"
+#include "../network/out_packet.h"
 
 #include "../logger/logger.h"
 
@@ -17,12 +22,20 @@
 #include <ctime>
 #include <chrono>
 
+#include <boost/shared_ptr.hpp>
+
 namespace nan2 {
 
   struct updatable_comparator {
     inline bool operator()(const Updatable* lhs, const Updatable* rhs) const {
         if (lhs->update_order() == rhs->update_order()) return lhs->internal_id() < rhs->internal_id();
         return lhs->update_order() < rhs->update_order();
+    }
+  };
+
+  struct entity_comparator {
+    inline bool operator()(const Entity* lhs, const Entity* rhs) const {
+        return lhs->internal_id() < rhs->internal_id();
     }
   };
 
@@ -34,24 +47,43 @@ namespace nan2 {
 
     int snapshot_send_timer_;
     int last_snapshot_sent_time_;
+    int ping_send_timer_;
+    int ping_seq_;
 
     // Static World Map data
     WorldMap *world_map_;
+
     std::map<int, Player*> players_;
+    std::set<RootBox*, entity_comparator> root_boxes_;
+    std::set<DroppedItem*, entity_comparator> dropped_items_;
 
     // Update list
     std::set<Updatable*, updatable_comparator> updatable_ready_stage_;
     std::set<Updatable*, updatable_comparator> updatable_set_;
     std::set<Updatable*, updatable_comparator> destroyable_set_;
 
+    std::queue<short> entity_id_pool_;
+
+    WorldGuaranteedPacketBuilder world_guaranteed_packet_builder_;
+    std::queue<OutPacket> send_packet_queue_;
+
     void StagingUpdatables();
     void DestroyUpdatables();
 
     void TakeSnapshot();
 
-    std::queue< std::vector<uint8_t> > send_packet_queue_;
+    // Acquire usable entity id
+    // Returns 0 if there's no usable id (= entity_id_pool_ is empty)
+    short AcquireEntityId();
+
+    // Release entity id and makes it reusable.
+    void ReleaseEntityId(short id);
 
   public:
+
+    /*** For Dev ***/
+    std::map<uint64_t, int> cpmap_;
+    /*** For Dev ***/
 
     World();
     World(WorldMap* world_map);
@@ -75,12 +107,19 @@ namespace nan2 {
     Player* AddPlayer(int id);
     Player* GetPlayer(int id);
     std::map<int, Player*>& GetPlayers();
+    std::set<RootBox*, entity_comparator>& root_boxes();
+    std::set<DroppedItem*, entity_comparator>& dropped_items();
 
-    void OnPacketReceived(uint8_t*& buffer, unsigned int& size);
-    void ParsePlayerInputPacket(uint8_t* buffer, unsigned int size);
+    bool CreateRandomDroppedItemAt(const Vector2& position, DroppedItem*& spawned_item);
+
+    void OnPacketReceived(boost::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id);
+    void ParsePlayerInputPacket(uint8_t* buffer, unsigned int size, uint64_t client_id);
+    void ParsePongPacket(uint8_t* buffer, unsigned int size);
+
+    void SendPingPacket();
 
     unsigned int SendPacketQueueSize() const;
-    const std::vector<uint8_t> PopSendPacket();
+    const OutPacket PopSendPacket();
 
     int last_snapshot_sent_time() const;
 

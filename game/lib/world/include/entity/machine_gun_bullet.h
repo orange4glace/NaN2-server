@@ -11,7 +11,6 @@ namespace nan2 {
 
   private:
 
-    Vector2 position_;
     Vector2 angle_;
     float SPEED_;
 
@@ -21,6 +20,7 @@ namespace nan2 {
 
     virtual const AABB collider() const;
 
+    void Update();
     void FixedUpdate();
 
   };

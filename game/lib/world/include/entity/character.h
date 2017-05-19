@@ -32,13 +32,14 @@ namespace nan2 {
 
     Player* player_;
 
-    Vector2 position_;
     bool controllable_;
     int max_hp_;
     int hp_;
     int dash_duration_;
     float dash_distance_;
     int dash_cooldown_;
+    int dash_time_;
+    unsigned char dash_dir_;
     bool dashing_;
 
     Weapon* weapon_;
@@ -48,6 +49,8 @@ namespace nan2 {
     CharacterSnapshot snapshot_;
 
     void SaveTickData(const CharacterTickData& tick_data);
+    void UpdateDashState(int dt);
+    void Dash(unsigned char dir);
 
     float k;
 
@@ -66,7 +69,6 @@ namespace nan2 {
 
     // Fire weapon
     bool Fire(unsigned char dir) const;
-    void Dash(const Vector2& angle);
     void Update();
     void FixedUpdate();
     void Move252(unsigned char dir, float time);
@@ -78,11 +80,9 @@ namespace nan2 {
     void AddInput(PlayerInputPacket& plp);
 
     const Player& player() const;
-    const Vector2& position() const;
     int hp() const;
+    bool is_dashing() const;
     CharacterSnapshot& snapshot();
-    void position(float x, float y);
-    void position(const Vector2& v);
     void hp(int hp);
     void SetWeapon(Weapon* weapon);
 

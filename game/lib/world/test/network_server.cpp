@@ -29,10 +29,10 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
     if (!error)
     {
         try {
-            get_client_id(remote_endpoint);
             uint8_t* message = new uint8_t[bytes_transferred];
             std::memcpy(message, recv_buffer.data(), bytes_transferred);
             ClientMessage* cm = new ClientMessage();
+            cm->client_id = get_client_id(remote_endpoint);
             cm->data = message;
             cm->size = bytes_transferred;
             incomingMessages.push(cm);
@@ -54,7 +54,7 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
     start_receive();
 }
 
-void NetworkServer::send(std::vector<uint8_t>& buffer, udp::endpoint target_endpoint)
+void NetworkServer::send(const std::vector<uint8_t>& buffer, udp::endpoint target_endpoint)
 {
     socket.send_to(boost::asio::buffer(buffer), target_endpoint);
     sentBytes += buffer.size();
@@ -89,7 +89,7 @@ uint64_t NetworkServer::get_client_id(udp::endpoint endpoint)
     return nextClientID;
 };
 
-void NetworkServer::SendToClient(std::vector<uint8_t>& buffer, uint64_t clientID, bool guaranteed) 
+void NetworkServer::SendToClient(const std::vector<uint8_t>& buffer, uint64_t clientID, bool guaranteed) 
 { 
 
     try {
@@ -100,7 +100,7 @@ void NetworkServer::SendToClient(std::vector<uint8_t>& buffer, uint64_t clientID
     }
 };
 
-void NetworkServer::SendToAllExcept(std::vector<uint8_t>& buffer, uint64_t clientID, bool guaranteed)
+void NetworkServer::SendToAllExcept(const std::vector<uint8_t>& buffer, uint64_t clientID, bool guaranteed)
 {
 
     for (auto client: clients)
@@ -108,7 +108,7 @@ void NetworkServer::SendToAllExcept(std::vector<uint8_t>& buffer, uint64_t clien
             send(buffer, client.right);
 };
 
-void NetworkServer::SendToAll(std::vector<uint8_t>& buffer, bool guaranteed)
+void NetworkServer::SendToAll(const std::vector<uint8_t>& buffer, bool guaranteed)
 {
 
     for (auto client: clients)

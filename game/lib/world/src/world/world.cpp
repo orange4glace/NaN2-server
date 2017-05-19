@@ -5,6 +5,8 @@
 #include "network/world_snapshot_packet_builder.h"
 #include "network/packet_parser.h"
 #include "network/player_input_packet_parser.h"
+#include "network/pong_packet_parser.h"
+#include "network/ping_packet_builder.h"
 
 #include <flatbuffers/flatbuffers.h>
 #include "flatbuffers/world_generated.h"
@@ -16,8 +18,16 @@ namespace nan2 {
   World::World() : 
     last_system_time_(std::chrono::high_resolution_clock::now()),
     snapshot_send_timer_(0),
+    ping_send_timer_(0),
+    ping_seq_(0),
     last_snapshot_sent_time_(Time::current_time()) {
     world_map_ = new WorldMap();
+
+    // Fill entity id pool
+    for (short i = 1; i < 65536; i ++) entity_id_pool_.push(i);
+
+    RootBox* root_box = new RootBox(this, Vector2(30, 30));
+    root_boxes_.insert(root_box);
   }
 
   World::World(WorldMap* world_map) : 
@@ -41,6 +51,7 @@ namespace nan2 {
 
     int dt = Time::delta_time();
     snapshot_send_timer_ += dt;
+    ping_send_timer_ += dt;
 
     int current_fixed_time = Time::current_time();
     Time::current_time(Time::current_time() + dt);
@@ -73,15 +84,31 @@ namespace nan2 {
 
     DestroyUpdatables();
 
-    if (snapshot_send_timer_ > 33) {
+    if (snapshot_send_timer_ > 100) {
       snapshot_send_timer_ = 0;
       last_snapshot_sent_time_ = Time::current_time();
       TakeSnapshot();
     }
+    if (ping_send_timer_ >= 200) {
+      ping_send_timer_ = 0;
+      SendPingPacket();
+    }
+
   }
 
   void World::FixedUpdate() {
 
+  }
+
+  short World::AcquireEntityId() {
+    if (entity_id_pool_.size() == 0) return 0;
+    short ret = entity_id_pool_.front();
+    entity_id_pool_.pop();
+    return ret;
+  }
+
+  void World::ReleaseEntityId(short id) {
+    entity_id_pool_.push(id);
   }
 
   void World::DestroyUpdatables() {
@@ -90,6 +117,7 @@ namespace nan2 {
       updatable_set_.erase(item);
       updatable_ready_stage_.erase(item);
       item->OnDestroy();
+      ReleaseEntityId(item->id());
       delete item;
     }
     destroyable_set_.clear();
@@ -112,6 +140,9 @@ namespace nan2 {
     if (obj == nullptr) return false;
     if (updatable_set_.count(obj)) return false;
     if (updatable_ready_stage_.count(obj)) return false;
+    short id = AcquireEntityId();
+    if (id == 0) return false;
+    obj->id(id);
     updatable_ready_stage_.insert(obj);
     L_DEBUG << "updatable added.";
     return true;
@@ -127,10 +158,10 @@ namespace nan2 {
   Player* World::AddPlayer(int id) {
     if (players_.count(id)) return players_[id];
     Player* player = new Player(this, id);
-    players_.insert({id, player});
+    players_[id] = player;
     AddUpdatable(&player->character());
 
-    L_DEBUG << "Added Player " << id;
+    L_DEBUG << "Added Player " << id << " " << players_.count(id);
 
     return player;
   }
@@ -144,28 +175,53 @@ namespace nan2 {
     return players_;
   }
 
+  bool World::CreateRandomDroppedItemAt(const Vector2& position, DroppedItem*& spawned_item) {
+    short id = AcquireEntityId();
+    if (id == 0) return false;
+    DroppedItem* item = new DroppedItem(this, position);
+    dropped_items_.insert(item);
+    spawned_item = item;
+    world_guaranteed_packet_builder_.AddEntityCreated(item);
+    return true;
+  }
+
+  std::set<RootBox*, entity_comparator>& World::root_boxes() {
+    return root_boxes_;
+  }
+
+  std::set<DroppedItem*, entity_comparator>& World::dropped_items() {
+    return dropped_items_;
+  }
+
 
   // Netcode
 
   void World::TakeSnapshot() {
     WorldSnapshotPacketBuilder packet_builder;
     packet_builder.Build(*this);
-    send_packet_queue_.push(packet_builder.GetBufferVector());
+    OutPacket packet(packet_builder.GetBufferVector(), OutPacket::BROADCAST);
+    send_packet_queue_.push(packet);
+    world_guaranteed_packet_builder_.Clear();
   }
 
-  void World::OnPacketReceived(uint8_t*& buffer, unsigned int& size) {
-    packet_type type = PacketParser::GetPacketType(buffer);
+  void World::OnPacketReceived(boost::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id) {
+    std::vector<char>& buffer_vector = *buffer;
+    uint8_t* buffer_array = new uint8_t[size];
+    std::copy(buffer_vector.begin(), buffer_vector.end(), buffer_array);
+
+    packet_type type = PacketParser::GetPacketType(buffer_array);
 
     try {
       switch (type) {
         case PacketType::PING:
           break;
         case PacketType::PONG:
+          ParsePongPacket(buffer_array, size);
           break;
         case PacketType::SNAPSHOT:
           break;
         case PacketType::PLAYER_INPUT:
-          ParsePlayerInputPacket(buffer, size);
+          ParsePlayerInputPacket(buffer_array, size, client_id);
           break;
         default:
           break;
@@ -173,24 +229,48 @@ namespace nan2 {
     } catch (const char* exp) {
       L_DEBUG << exp;
     }
+    delete buffer_array;
   }
 
-  void World::ParsePlayerInputPacket(uint8_t* buffer, unsigned int size) {
+  void World::ParsePlayerInputPacket(uint8_t* buffer, unsigned int size, uint64_t client_id) {
     PlayerInputPacketParser parser(buffer, size);
     int player_id;
     auto player_inputs = parser.Parse(player_id);
     Player* player = GetPlayer(player_id);
+    cpmap_[player_id] = client_id;
     if (player == nullptr) 
       player = AddPlayer(player_id);
     for (auto input : player_inputs)
       player->character().AddInput(input);
   }
 
+  void World::ParsePongPacket(uint8_t* buffer, unsigned int size) {
+    PongPacketParser parser(buffer, size);
+    int player_id;
+    int seq = parser.Parse(player_id);
+    Player* player = GetPlayer(player_id);
+    if (player == nullptr) return;
+    player->OnPongPacketReceived(seq);
+  }
+
+  void World::SendPingPacket() {
+    int seq = ping_seq_++;
+    for (auto player_item : players_) {
+      PingPacketBuilder builder;
+      auto player_ = player_item.second;
+      builder.Build(seq, player_->ping());
+      
+      OutPacket packet(builder.GetBufferVector(), OutPacket::UNICAST, cpmap_[player_->id()]);
+      player_->PushPingPacket(seq, Time::current_time());
+      send_packet_queue_.push(packet);
+    }
+  }
+
   unsigned int World::SendPacketQueueSize() const {
     return send_packet_queue_.size();
   }
 
-  const std::vector<uint8_t> World::PopSendPacket() {
+  const OutPacket World::PopSendPacket() {
     auto ret = send_packet_queue_.front();
     send_packet_queue_.pop();
     return ret;

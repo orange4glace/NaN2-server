@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#define fb nan2::game::world
-
 namespace nan2 {
 
   class PlayerInputPacketParser : public PacketParser {

@@ -6,8 +6,6 @@
 
 #include "../flatbuffers/world_generated.h"
 
-#define fb nan2::game::world
-
 namespace nan2 {
 
   class WorldSnapshotPacketBuilder : public PacketBuilder {
