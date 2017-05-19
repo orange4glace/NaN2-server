@@ -196,6 +196,7 @@ namespace nan2 {
     } catch (const char* exp) {
       L_DEBUG << exp;
     }
+    delete buffer_array;
   }
 
   void World::ParsePlayerInputPacket(uint8_t* buffer, unsigned int size, uint64_t client_id) {
