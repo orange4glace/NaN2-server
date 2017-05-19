@@ -172,20 +172,23 @@ namespace nan2 {
   }
 
   void World::OnPacketReceived(boost::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id) {
-    /*
-    packet_type type = PacketParser::GetPacketType(buffer);
+    std::vector<char>& buffer_vector = *buffer;
+    uint8_t* buffer_array = new uint8_t[size];
+    std::copy(buffer_vector.begin(), buffer_vector.end(), buffer_array);
+
+    packet_type type = PacketParser::GetPacketType(buffer_array);
 
     try {
       switch (type) {
         case PacketType::PING:
           break;
         case PacketType::PONG:
-          ParsePongPacket(buffer, size);
+          ParsePongPacket(buffer_array, size);
           break;
         case PacketType::SNAPSHOT:
           break;
         case PacketType::PLAYER_INPUT:
-          ParsePlayerInputPacket(buffer, size, client_id);
+          ParsePlayerInputPacket(buffer_array, size, client_id);
           break;
         default:
           break;
@@ -193,7 +196,6 @@ namespace nan2 {
     } catch (const char* exp) {
       L_DEBUG << exp;
     }
-    */
   }
 
   void World::ParsePlayerInputPacket(uint8_t* buffer, unsigned int size, uint64_t client_id) {
