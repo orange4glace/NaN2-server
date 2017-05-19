@@ -6,6 +6,7 @@
 #include "world_map.h"
 #include "../entity/player.h"
 #include "../entity/character.h"
+#include "../entity/root_box.h"
 
 #include "../network/out_packet.h"
 
@@ -19,12 +20,20 @@
 #include <ctime>
 #include <chrono>
 
+#include <boost/shared_ptr.hpp>
+
 namespace nan2 {
 
   struct updatable_comparator {
     inline bool operator()(const Updatable* lhs, const Updatable* rhs) const {
         if (lhs->update_order() == rhs->update_order()) return lhs->internal_id() < rhs->internal_id();
         return lhs->update_order() < rhs->update_order();
+    }
+  };
+
+  struct entity_comparator {
+    inline bool operator()(const Entity* lhs, const Entity* rhs) const {
+        return lhs->internal_id() < rhs->internal_id();
     }
   };
 
@@ -42,6 +51,7 @@ namespace nan2 {
     // Static World Map data
     WorldMap *world_map_;
     std::map<int, Player*> players_;
+    std::set<RootBox*, entity_comparator> root_boxes_;
 
     // Update list
     std::set<Updatable*, updatable_comparator> updatable_ready_stage_;
@@ -83,8 +93,9 @@ namespace nan2 {
     Player* AddPlayer(int id);
     Player* GetPlayer(int id);
     std::map<int, Player*>& GetPlayers();
+    std::set<RootBox*, entity_comparator>& root_boxes();
 
-    void OnPacketReceived(uint8_t*& buffer, unsigned int& size, uint64_t client_id);
+    void OnPacketReceived(boost::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id);
     void ParsePlayerInputPacket(uint8_t* buffer, unsigned int size, uint64_t client_id);
     void ParsePongPacket(uint8_t* buffer, unsigned int size);
 

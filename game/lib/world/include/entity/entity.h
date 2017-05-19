@@ -11,17 +11,23 @@ namespace nan2 {
 
   class Entity {
 
-  public:
-    Entity(World* world);
+  private:
+    
+    int internal_id_;
 
   protected:
+
+    static int next_internal_id_;
 
     World* world_;
     int layer_;
 
   public:
+
+    Entity(World* world);
     
     World& world();
+    int internal_id() const;
     virtual void OnCreate() {};
     virtual void OnDestroy() {};
     virtual void Destroy() = 0;

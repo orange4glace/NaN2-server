@@ -36,8 +36,9 @@ namespace nan2 {
     Vector2 dv = angle_ * SPEED_ * (Time::fixed_delta_time() / 1000.0f);
     
     const void* rCollider = nullptr;
-
     Character* rCharacter = nullptr;
+    RootBox* rRootBox = nullptr;
+
     float rf = INFINITY;
     for (auto player : players) {
       Character& character = player.second->character();
@@ -53,6 +54,20 @@ namespace nan2 {
       if (cf < rf) {
         rCharacter = &character;
         rCollider = &character;
+        rf = cf;
+      }
+    }
+
+    auto root_boxes = world_->root_boxes();
+
+    for (auto root_box : root_boxes) {
+      bool collided;
+      const AABB& collider = root_box->collider();
+      float cf = AABB::SweptAABB(thisCollider, dv, collider, Vector2::ZERO, collided);
+      if (!collided) continue;
+      if (cf < rf) {
+        rRootBox = root_box;
+        rCollider = root_box;
         rf = cf;
       }
     }
@@ -77,6 +92,10 @@ namespace nan2 {
           rCharacter->AddHP(-damage_);
           Destroy();
         }
+      }
+      else if (rCollider == rRootBox) {
+        L_DEBUG << "#### Collision detected Root box";
+        Destroy();
       }
       else if (rCollider == rTile) {
         Destroy();

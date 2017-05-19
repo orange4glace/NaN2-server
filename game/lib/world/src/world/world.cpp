@@ -22,6 +22,9 @@ namespace nan2 {
     ping_seq_(0),
     last_snapshot_sent_time_(Time::current_time()) {
     world_map_ = new WorldMap();
+
+    RootBox* root_box = new RootBox(this, Vector2(30, 30));
+    root_boxes_.insert(root_box);
   }
 
   World::World(WorldMap* world_map) : 
@@ -154,6 +157,10 @@ namespace nan2 {
     return players_;
   }
 
+  std::set<RootBox*, entity_comparator>& World::root_boxes() {
+    return root_boxes_;
+  }
+
 
   // Netcode
 
@@ -164,7 +171,8 @@ namespace nan2 {
     send_packet_queue_.push(packet);
   }
 
-  void World::OnPacketReceived(uint8_t*& buffer, unsigned int& size, uint64_t client_id) {
+  void World::OnPacketReceived(boost::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id) {
+    /*
     packet_type type = PacketParser::GetPacketType(buffer);
 
     try {
@@ -185,6 +193,7 @@ namespace nan2 {
     } catch (const char* exp) {
       L_DEBUG << exp;
     }
+    */
   }
 
   void World::ParsePlayerInputPacket(uint8_t* buffer, unsigned int size, uint64_t client_id) {
@@ -223,6 +232,10 @@ namespace nan2 {
 
   unsigned int World::SendPacketQueueSize() const {
     return send_packet_queue_.size();
+  }
+
+  void SpawnRandomItemAt(const Vector2& position) {
+
   }
 
   const OutPacket World::PopSendPacket() {

@@ -10,9 +10,6 @@ namespace nan2 {
   class Updatable : public Entity {
 
   private:
-    static int next_internal_id_;
-
-    int internal_id_;
     bool is_on_stage_;
 
   protected:
@@ -27,8 +24,6 @@ namespace nan2 {
   public:
 
     Updatable(World* world);
-
-    int internal_id() const;
 
     virtual void Destroy();
     virtual void Update() {};
