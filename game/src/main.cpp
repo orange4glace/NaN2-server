@@ -7,14 +7,47 @@
 
 using namespace nan2;
 
+typedef mgne::pattern::ThreadJobQueue<std::function<void()>> WorldQueue;
+
 cpp_redis::redis_client redis_client;
+
+boost::asio::io_service update_service;
+std::array<WorldQueue, WORLD_THREAD> world_queues;
+std::array<InterfaceGame*, MAX_SESSION_CAPACITY> games;
 
 mgne::udp::Server* server;
 GameMap game_map;
 
+void update_and_send(InterfaceGame* game)
+{
+  World& world = game->GetWorld();
+  world.Update();
+  while (world.SendPacketQueueSize()) {
+    auto buffer = world.PopSendPacket();
+    game->SendToAll(buffer);
+  }
+}
+
+void update_world(InterfaceGame* game)
+{
+  std::function<void()> world_process(std::bind(update_and_send, game));
+  world_queues[game->GetId() % WORLD_THREAD].Push(world_process);
+  game->GetTimer().expires_from_now(boost::posix_time::milliseconds(16));
+  // need to be calculated
+  game->GetTimer().async_wait(boost::bind(update_world, game));
+}
+
 void packet_handler(mgne::Packet &p)
 {
-  std::cout << "receiving packet!!" << std::endl;
+  int session_id = p.GetSessionId();
+  InterfaceGame* game = games[session_id];
+
+  /*
+  std::function<void()> process_packet(
+    std::bind(&World::OnPacketReceived, games[session_id]->GetWorld(),
+    p.GetPacketData(), p.GetPacketSize()));
+  world_queues[game->GetId() % WORLD_THREAD].Push(process_packet);
+  */
 }
 
 int admit_handler(mgne::Packet &p)
@@ -39,13 +72,16 @@ int admit_handler(mgne::Packet &p)
   auto it = game_map.Find(game_num);
   if (it == game_map.end()) {
     if (game_mode == GameMode::DEATH) {
-      it->second.reset(new Game<GameMode::DEATH>(server));
+      it->second.reset(new Game<GameMode::DEATH>(server, update_service,
+        game_num));
     } else {
       // deal with other game modes..
     }
   }
-
+  games[p.GetSessionId()] = it->second.get();
   if (it->second->EnterGame(p.GetSessionId()) == 0) {
+    // send start packet to every body
+    update_world(it->second.get());
     // throw update function
     // to queue_[game_num % NUM_WORLD_THREAD]
   }

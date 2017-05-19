@@ -22,6 +22,10 @@ public:
   virtual void SendToAllExcept(char* message, int client_id) = 0;
   virtual void SendToAll(char* message) = 0;
 
+  virtual World& GetWorld() = 0;
+  virtual boost::asio::deadline_timer& GetTimer() = 0;
+  virtual int GetId() = 0;
+
   virtual ~InterfaceGame() = default;
 };
 
@@ -30,8 +34,11 @@ class Game : public InterfaceGame {
 public:
   // TODO : complete this class...
 
-  Game(mgne::udp::Server* server) 
+  Game(mgne::udp::Server* server, boost::asio::io_service& update_service,
+    int num)
     : server_(server)
+    , update_timer_(update_service)
+    , id_(num)
   {
     num_people_ = 0;
   }
@@ -44,26 +51,27 @@ public:
     return 1;
   }
 
-  void SendToClient(char* message, int client_id)
+  void SendToAll(std::vector<char>& message)
   {
-  }
-
-  void SendToAllExcept(char* message, int client_id)
-  {
-  }
-
-  void SendToAll(char* message)
-  {
+    mgne::Packet tmp(message.size(), packet_id, message.data(),
+      mgne::Packet::PacketType::PACKET_UDP);
+    for (int client : clients_) {
+      server_->GetSessionManager().Send(client, tmp);
+    }
   }
 
   World& GetWorld() { return world_; }
+  boost::asio::deadline_timer& GetTimer() { return update_timer_; }
+  int GetId() { return id_; }
 
 private:
   mgne::udp::Server* server_;
+  boost::asio::deadline_timer update_timer_;
   World world_;
 
   std::array<int, sizes[mode]> clients_;
   int num_people_;
+  int id_;
 };
 
 class GameMap : mgne::pattern::ThreadSafe {
