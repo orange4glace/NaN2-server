@@ -23,6 +23,9 @@ namespace nan2 {
     last_snapshot_sent_time_(Time::current_time()) {
     world_map_ = new WorldMap();
 
+    // Fill entity id pool
+    for (short i = 1; i < 65536; i ++) entity_id_pool_.push(i);
+
     RootBox* root_box = new RootBox(this, Vector2(30, 30));
     root_boxes_.insert(root_box);
   }
@@ -97,12 +100,24 @@ namespace nan2 {
 
   }
 
+  short World::AcquireEntityId() {
+    if (entity_id_pool_.size() == 0) return 0;
+    short ret = entity_id_pool_.front();
+    entity_id_pool_.pop();
+    return ret;
+  }
+
+  void World::ReleaseEntityId(short id) {
+    entity_id_pool_.push(id);
+  }
+
   void World::DestroyUpdatables() {
     for (auto item : destroyable_set_) {
       assert(item != nullptr);
       updatable_set_.erase(item);
       updatable_ready_stage_.erase(item);
       item->OnDestroy();
+      ReleaseEntityId(item->id());
       delete item;
     }
     destroyable_set_.clear();
@@ -125,6 +140,9 @@ namespace nan2 {
     if (obj == nullptr) return false;
     if (updatable_set_.count(obj)) return false;
     if (updatable_ready_stage_.count(obj)) return false;
+    short id = AcquireEntityId();
+    if (id == 0) return false;
+    obj->id(id);
     updatable_ready_stage_.insert(obj);
     L_DEBUG << "updatable added.";
     return true;
@@ -157,8 +175,21 @@ namespace nan2 {
     return players_;
   }
 
+  bool World::CreateRandomDroppedItemAt(const Vector2& position, DroppedItem*& spawned_item) {
+    short id = AcquireEntityId();
+    if (id == 0) return false;
+    DroppedItem* item = new DroppedItem(this, position);
+    dropped_items_.insert(item);
+    spawned_item = item;
+    return true;
+  }
+
   std::set<RootBox*, entity_comparator>& World::root_boxes() {
     return root_boxes_;
+  }
+
+  std::set<DroppedItem*, entity_comparator>& World::dropped_items() {
+    return dropped_items_;
   }
 
 
@@ -235,10 +266,6 @@ namespace nan2 {
 
   unsigned int World::SendPacketQueueSize() const {
     return send_packet_queue_.size();
-  }
-
-  void SpawnRandomItemAt(const Vector2& position) {
-
   }
 
   const OutPacket World::PopSendPacket() {

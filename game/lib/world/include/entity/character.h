@@ -32,7 +32,6 @@ namespace nan2 {
 
     Player* player_;
 
-    Vector2 position_;
     bool controllable_;
     int max_hp_;
     int hp_;
@@ -81,12 +80,9 @@ namespace nan2 {
     void AddInput(PlayerInputPacket& plp);
 
     const Player& player() const;
-    const Vector2& position() const;
     int hp() const;
     bool is_dashing() const;
     CharacterSnapshot& snapshot();
-    void position(float x, float y);
-    void position(const Vector2& v);
     void hp(int hp);
     void SetWeapon(Weapon* weapon);
 

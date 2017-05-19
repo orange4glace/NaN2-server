@@ -13,8 +13,6 @@ namespace nan2 {
 
     const static Vector2 SIZE_;
 
-    Vector2 position_;
-
   public:
 
     DroppedItem(World* world, const Vector2& position);

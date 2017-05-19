@@ -11,7 +11,6 @@ namespace nan2 {
 
   private:
 
-    Vector2 position_;
     Vector2 angle_;
     float SPEED_;
 

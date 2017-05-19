@@ -167,10 +167,6 @@ namespace nan2 {
     return *player_;
   }
 
-  const Vector2& Character::position() const {
-    return position_;
-  }
-
   int Character::hp() const {
     return hp_;
   }
@@ -181,15 +177,6 @@ namespace nan2 {
 
   CharacterSnapshot& Character::snapshot() {
     return snapshot_;
-  }
-
-  void Character::position(float x, float y) {
-    position_.set_x(x);
-    position_.set_y(y);
-  }
-
-  void Character::position(const Vector2& v) {
-    position_ = v;
   }
 
   void Character::hp(int hp) {
