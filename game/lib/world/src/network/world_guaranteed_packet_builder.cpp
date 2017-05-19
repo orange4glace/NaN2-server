@@ -3,11 +3,13 @@
 
 #include "logger/logger.h"
 
+#include "flatbuffers/entity_created_generated.h"
+
 namespace nan2 {
 
   WorldGuaranteedPacketBuilder::WorldGuaranteedPacketBuilder() :
     PacketBuilder() {
-    packet_type_ = PacketType::GUARANTEED_PACKET;
+    packet_type_ = PacketType::WORLD_GUARANTEED;
   }
 
   void WorldGuaranteedPacketBuilder::AddEntityCreated(Entity* entity) {
@@ -21,12 +23,26 @@ namespace nan2 {
   void WorldGuaranteedPacketBuilder::Build(World& world) {
     if (!clean_) Clear();
     clean_ = false;
+
+    AppendInt(PacketType::WORLD_GUARANTEED);
+
+    flatbuffers::FlatBufferBuilder builder_;
+
+    std::vector<flatbuffers::Offset<fb::EntityCreated>> entity_created_vector;
+    std::vector<flatbuffers::Offset<uint16_t>> entity_destroied_vector;
+
   }
 
   void WorldGuaranteedPacketBuilder::Clear() {
     PacketBuilder::Clear();
-    entity_created_.clear();
-    entity_destroied_.clear();
+    if (entity_created_.size() > 0) {
+      std::queue<EntityCreatedPacket> tmp;
+      std::swap(entity_created_, tmp);
+    }
+    if (entity_destroied_.size() > 0) {
+      std::queue<EntityDestroiedPacket> tmp;
+      std::swap(entity_destroied_, tmp);
+    }
   }
 
 }

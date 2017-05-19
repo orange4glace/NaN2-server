@@ -9,6 +9,7 @@
 #include "../entity/root_box.h"
 #include "../entity/dropped_item.h"
 
+#include "../network/world_guaranteed_packet_builder.h"
 #include "../network/out_packet.h"
 
 #include "../logger/logger.h"
@@ -63,6 +64,7 @@ namespace nan2 {
 
     std::queue<short> entity_id_pool_;
 
+    WorldGuaranteedPacketBuilder world_guaranteed_packet_builder_;
     std::queue<OutPacket> send_packet_queue_;
 
     void StagingUpdatables();

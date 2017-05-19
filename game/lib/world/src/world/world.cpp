@@ -181,6 +181,7 @@ namespace nan2 {
     DroppedItem* item = new DroppedItem(this, position);
     dropped_items_.insert(item);
     spawned_item = item;
+    world_guaranteed_packet_builder_.AddEntityCreated(item);
     return true;
   }
 
@@ -200,6 +201,7 @@ namespace nan2 {
     packet_builder.Build(*this);
     OutPacket packet(packet_builder.GetBufferVector(), OutPacket::BROADCAST);
     send_packet_queue_.push(packet);
+    world_guaranteed_packet_builder_.Clear();
   }
 
   void World::OnPacketReceived(boost::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id) {

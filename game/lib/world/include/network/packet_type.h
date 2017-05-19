@@ -11,7 +11,7 @@ namespace nan2 {
     const packet_type PONG = 2;
     const packet_type SNAPSHOT = 3;
     const packet_type PLAYER_INPUT = 4;
-    const packet_type GUARANTEED_PACKET = 5;
+    const packet_type WORLD_GUARANTEED = 5;
   }
 }
 

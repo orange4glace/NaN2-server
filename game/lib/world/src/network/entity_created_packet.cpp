@@ -20,7 +20,7 @@ namespace nan2 {
     return entity_type_;
   }
 
-  const Vector2& ItemDropPacket::position() const {
+  const Vector2& EntityCreatedPacket::position() const {
     return position_;
   }
 

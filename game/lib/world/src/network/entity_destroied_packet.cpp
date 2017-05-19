@@ -10,7 +10,7 @@ namespace nan2 {
 
   }
 
-  entity_id EntityCreatedPacket::entity_id() const {
+  entity_id EntityDestroiedPacket::entity_id() const {
     return entity_id_;
   }
 

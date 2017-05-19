@@ -3,13 +3,11 @@
 
 #include "packet_builder.h"
 
-#include "../world/world.h"
 #include "entity_created_packet.h"
 #include "entity_destroied_packet.h"
 
-#include "../flatbuffers/world_generated.h"
-
 #include <vector>
+#include <queue>
 #include <utility>
 
 namespace nan2 {
