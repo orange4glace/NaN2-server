@@ -29,6 +29,7 @@ int main() {
     while (serv.HasMessages()) {
       ClientMessage* msg = serv.PopMessage();
       world.OnPacketReceived(msg->data, msg->size, msg->client_id);
+      delete msg;
     }
     world.Update();
     while (world.SendPacketQueueSize()) {

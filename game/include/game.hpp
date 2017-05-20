@@ -18,9 +18,8 @@ class InterfaceGame {
 public:
   virtual int EnterGame(int client_id) = 0;
 
-  virtual void SendToClient(char* message, int client_id) = 0;
-  virtual void SendToAllExcept(char* message, int client_id) = 0;
-  virtual void SendToAll(char* message) = 0;
+  virtual void SendToClient(const std::vector<char>& message, int client_id) = 0;
+  virtual void SendToAll(const std::vector<char>& message) = 0;
 
   virtual World& GetWorld() = 0;
   virtual boost::asio::deadline_timer& GetTimer() = 0;
@@ -51,13 +50,20 @@ public:
     return 1;
   }
 
-  void SendToAll(std::vector<char>& message)
+  void SendToAll(const std::vector<char>& message)
   {
-    mgne::Packet tmp(message.size(), packet_id, message.data(),
+    mgne::Packet tmp(message.size(), 0, message.data(),
       mgne::Packet::PacketType::PACKET_UDP);
     for (int client : clients_) {
       server_->GetSessionManager().Send(client, tmp);
     }
+  }
+
+  void SendToClient(const std::vector<char>& message, int client)
+  {
+    mgne::Packet tmp(message.size(), 0, message.data(),
+      mgne::Packet::PacketType::PACKET_UDP);
+    server_->GetSessionManager().Send(client, tmp);
   }
 
   World& GetWorld() { return world_; }
