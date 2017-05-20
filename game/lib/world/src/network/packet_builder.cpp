@@ -17,14 +17,14 @@ namespace nan2 {
     if (buffer_array_ != nullptr) delete buffer_array_;
   }
 
-  const uint8_t* PacketBuilder::ToArray() {
+  const int8_t* PacketBuilder::ToArray() {
     if (buffer_array_ != nullptr) delete buffer_array_;
-    buffer_array_ = new uint8_t[buffer_vector_.size()];
+    buffer_array_ = new int8_t[buffer_vector_.size()];
     std::copy(buffer_vector_.begin(), buffer_vector_.end(), buffer_array_);
     return buffer_array_;
   }
 
-  const std::vector<uint8_t>& PacketBuilder::GetBufferVector() const {
+  const std::vector<int8_t>& PacketBuilder::GetBufferVector() const {
     return buffer_vector_;
   }
 

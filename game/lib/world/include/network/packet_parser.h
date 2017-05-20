@@ -18,17 +18,17 @@ namespace nan2 {
 
   protected:
 
-    uint8_t* data_;
+    int8_t* data_;
     unsigned int size_;
     unsigned int offset_ = 0;
     packet_type packet_type_ = 0;
 
-    PacketParser(uint8_t* data, unsigned int size);
+    PacketParser(int8_t* data, unsigned int size);
 
     uint32_t ReadInt();
     uint16_t ReadShort();
     uint8_t  ReadByte();
-    uint8_t* ReadBytes(unsigned int size);
+    int8_t* ReadBytes(unsigned int size);
 
     void Take(unsigned int size);
 
@@ -44,7 +44,7 @@ namespace nan2 {
 
   public:
 
-    static packet_type GetPacketType(uint8_t* data);
+    static packet_type GetPacketType(int8_t* data);
     void Clear();
 
   };

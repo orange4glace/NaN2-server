@@ -6,7 +6,6 @@
 #include "world_map.h"
 #include "../entity/player.h"
 #include "../entity/character.h"
-#include "../entity/root_box.h"
 #include "../entity/dropped_item.h"
 
 #include "../network/world_guaranteed_packet_builder.h"
@@ -18,6 +17,7 @@
 #include <queue>
 #include <set>
 #include <map>
+#include <functional>
 #include <ratio>
 #include <ctime>
 #include <chrono>
@@ -35,7 +35,13 @@ namespace nan2 {
 
   struct entity_comparator {
     inline bool operator()(const Entity* lhs, const Entity* rhs) const {
-        return lhs->internal_id() < rhs->internal_id();
+        if (lhs->group() == rhs->group())
+            if (lhs->type() == rhs->type())
+                return lhs->internal_id() < rhs->internal_id();
+            else
+                return lhs->type() < rhs->type();
+        else
+            return lhs->group() < rhs->group();
     }
   };
 
@@ -54,8 +60,7 @@ namespace nan2 {
     WorldMap *world_map_;
 
     std::map<int, Player*> players_;
-    std::set<RootBox*, entity_comparator> root_boxes_;
-    std::set<DroppedItem*, entity_comparator> dropped_items_;
+    std::map<entity_group, std::set<Entity*, entity_comparator>> entities_;
 
     // Update list
     std::set<Updatable*, updatable_comparator> updatable_ready_stage_;
@@ -107,14 +112,18 @@ namespace nan2 {
     Player* AddPlayer(int id);
     Player* GetPlayer(int id);
     std::map<int, Player*>& GetPlayers();
-    std::set<RootBox*, entity_comparator>& root_boxes();
-    std::set<DroppedItem*, entity_comparator>& dropped_items();
+    std::set<Entity*, entity_comparator>& entities();
+
+    bool CreateEntity(Entity* entity);
+    void DestroyEntity(Entity* entity);
+
+    void IterateEntityGroup(entity_group group, std::function<bool(Entity*)> func);
 
     bool CreateRandomDroppedItemAt(const Vector2& position, DroppedItem*& spawned_item);
 
-    void OnPacketReceived(boost::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id);
-    void ParsePlayerInputPacket(uint8_t* buffer, unsigned int size, uint64_t client_id);
-    void ParsePongPacket(uint8_t* buffer, unsigned int size);
+    void OnPacketReceived(boost::shared_ptr<std::vector<int8_t>> buffer, unsigned int& size, uint64_t client_id);
+    void ParsePlayerInputPacket(int8_t* buffer, unsigned int size, uint64_t client_id);
+    void ParsePongPacket(int8_t* buffer, unsigned int size);
 
     void SendPingPacket();
 

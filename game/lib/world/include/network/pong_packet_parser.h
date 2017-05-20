@@ -11,7 +11,7 @@ namespace nan2 {
 
   public:
 
-    PongPacketParser(uint8_t* data, unsigned int size);
+    PongPacketParser(int8_t* data, unsigned int size);
 
     int Parse(int& out_player_id);
 

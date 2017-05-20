@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 #include <ratio>
+#include <vector>
 #include <ctime>
 #include <chrono>
 #include "network_server.h"
@@ -11,6 +12,7 @@
 #include <nan2/world/world_time.h>
 
 #include <boost/log/trivial.hpp>
+#include <boost/shared_ptr.hpp>
 
 using namespace std;
 using namespace nan2;
@@ -26,8 +28,7 @@ int main() {
 
     while (serv.HasMessages()) {
       ClientMessage* msg = serv.PopMessage();
-    //  world.OnPacketReceived(msg->data, msg->size, msg->client_id);
-      delete msg;
+      world.OnPacketReceived(msg->data, msg->size, msg->client_id);
     }
     world.Update();
     while (world.SendPacketQueueSize()) {

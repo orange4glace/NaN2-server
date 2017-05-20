@@ -2,6 +2,7 @@
 #include "entity/machine_gun_bullet.h"
 
 #include "entity/character.h"
+#include "entity/breakable.h"
 #include "world/world.h"
 #include "time.h"
 
@@ -37,7 +38,7 @@ namespace nan2 {
     
     const void* rCollider = nullptr;
     Character* rCharacter = nullptr;
-    RootBox* rRootBox = nullptr;
+    Breakable* rBreakable = nullptr;
 
     float rf = INFINITY;
     for (auto player : players) {
@@ -58,19 +59,19 @@ namespace nan2 {
       }
     }
 
-    auto root_boxes = world_->root_boxes();
-
-    for (auto root_box : root_boxes) {
+    world_->IterateEntityGroup(Entity::GROUP_BREAKABLE, [&](Entity* entity)->bool {
       bool collided;
-      const AABB& collider = root_box->collider();
+      Breakable* breakable = (Breakable*)entity;
+      const AABB& collider = breakable->collider();
       float cf = AABB::SweptAABB(thisCollider, dv, collider, Vector2::ZERO, collided);
-      if (!collided) continue;
+      if (!collided) return true;
       if (cf < rf) {
-        rRootBox = root_box;
-        rCollider = root_box;
+        rBreakable = breakable;
+        rCollider = breakable;
         rf = cf;
       }
-    }
+      return true;
+    });
 
     const AABB* rTile = nullptr;
     const std::vector<AABB>& world_map = world_->world_map()->GetStaticAABBTileColliders();
@@ -93,8 +94,8 @@ namespace nan2 {
           Destroy();
         }
       }
-      else if (rCollider == rRootBox) {
-        L_DEBUG << "#### Collision detected Root box";
+      else if (rCollider == rBreakable) {
+        L_DEBUG << "#### Collision detected Breakable";
         Destroy();
       }
       else if (rCollider == rTile) {

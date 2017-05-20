@@ -23,6 +23,10 @@ namespace nan2 {
     return id_;
   }
 
+  entity_group Entity::group() const {
+    return group_;
+  }
+
   entity_type Entity::type() const {
     return type_;
   }

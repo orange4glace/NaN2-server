@@ -5,7 +5,6 @@
 namespace nan2 {
 
   typedef char byte;
-
 }
 
 #endif
