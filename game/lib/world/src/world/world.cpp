@@ -14,6 +14,8 @@
 #include <cassert>
 #include <algorithm>
 
+#include "entity/breakable.h"
+
 namespace nan2 {
 
   World::World() : 
@@ -27,6 +29,9 @@ namespace nan2 {
     // Fill entity id pool
     for (unsigned short i = 1; i < 65535; i ++)
       entity_id_pool_.push(i);
+
+    Breakable* b = new Breakable(this, Vector2(50, 50));
+    CreateEntity(b);
   }
 
   World::World(WorldMap* world_map) : 
@@ -87,6 +92,7 @@ namespace nan2 {
       snapshot_send_timer_ = 0;
       last_snapshot_sent_time_ = Time::current_time();
       TakeSnapshot();
+      SendGuaranteedPacket();
     }
     if (ping_send_timer_ >= 200) {
       ping_send_timer_ = 0;
@@ -179,6 +185,8 @@ namespace nan2 {
     if (id == 0) return false;
     entities_[entity->group()].insert(entity);
     world_guaranteed_packet_builder_.AddEntityCreated(entity);
+
+    L_DEBUG << "Entity Created " << (int)entity->id() << " " << (int)entity->group() << " " << (int)entity->type();
   }
 
   void World::DestroyEntity(Entity* entity) {
@@ -187,7 +195,7 @@ namespace nan2 {
     ReleaseEntityId(entity->id());
     delete entity;
 
-    L_DEBUG << "Entity Removed (id : " << entity->id() << ", type = " << entity->type() << ")";
+    L_DEBUG << "Entity Removed (id : " << (int)entity->id() << ", type = " << (int)entity->type() << ")";
   }
 
   void World::IterateEntityGroup(entity_group group, std::function<bool(Entity*)> func) {
@@ -200,13 +208,12 @@ namespace nan2 {
     }
   }
 
-  bool World::CreateRandomDroppedItemAt(const Vector2& position, DroppedItem*& spawned_entity) {
+  bool World::CreateRandomDroppedItemAt(const Vector2& position) {
     DroppedItem* item = new DroppedItem(this, position);
     if (!CreateEntity(item)) {
       delete item;
       return false;
     }
-    spawned_entity = item;
     return true;
   }
 
@@ -217,6 +224,12 @@ namespace nan2 {
     WorldSnapshotPacketBuilder packet_builder;
     packet_builder.Build(*this);
     OutPacket packet(packet_builder.GetBufferVector(), OutPacket::BROADCAST);
+    send_packet_queue_.push(packet);
+  }
+
+  void World::SendGuaranteedPacket() {
+    world_guaranteed_packet_builder_.Build();
+    OutPacket packet(world_guaranteed_packet_builder_.GetBufferVector(), OutPacket::BROADCAST);
     send_packet_queue_.push(packet);
     world_guaranteed_packet_builder_.Clear();
   }

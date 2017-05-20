@@ -6,7 +6,7 @@ namespace nan2 {
   const Vector2 DroppedItem::SIZE_ = Vector2(15, 15);
 
   DroppedItem::DroppedItem(World* world, const Vector2& position) :
-    Entity(world) {
+    Entity(world, Entity::GROUP_DROPPED_ITEM, Entity::TYPE_DROPPED_ITEM) {
     position_= position;
   }
 

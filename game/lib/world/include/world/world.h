@@ -76,6 +76,7 @@ namespace nan2 {
     void DestroyUpdatables();
 
     void TakeSnapshot();
+    void SendGuaranteedPacket();
 
     // Acquire usable entity id
     // Returns 0 if there's no usable id (= entity_id_pool_ is empty)
@@ -119,7 +120,7 @@ namespace nan2 {
 
     void IterateEntityGroup(entity_group group, std::function<bool(Entity*)> func);
 
-    bool CreateRandomDroppedItemAt(const Vector2& position, DroppedItem*& spawned_item);
+    bool CreateRandomDroppedItemAt(const Vector2& position);
 
     void OnPacketReceived(boost::shared_ptr<std::vector<int8_t>> buffer, unsigned int& size, uint64_t client_id);
     void ParsePlayerInputPacket(int8_t* buffer, unsigned int size, uint64_t client_id);

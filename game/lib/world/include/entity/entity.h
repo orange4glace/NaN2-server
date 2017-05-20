@@ -42,7 +42,7 @@ namespace nan2 {
     static const entity_type TYPE_BREAKABLE = 1;
     static const entity_type TYPE_DROPPED_ITEM = 2;
 
-    Entity(World* world);
+    Entity(World* world, entity_group group, entity_type type);
     
     World& world();
     int internal_id() const;

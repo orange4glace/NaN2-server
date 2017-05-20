@@ -11,9 +11,13 @@ namespace nan2 {
 
   private:
 
+    const static Vector2 SIZE_;
+
   public:
 
     Breakable(World* world, const Vector2& position);
+
+    virtual const AABB collider() const;
 
     virtual void Destroy();
 
