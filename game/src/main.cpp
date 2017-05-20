@@ -23,8 +23,12 @@ void update_and_send(InterfaceGame* game)
   World& world = game->GetWorld();
   world.Update();
   while (world.SendPacketQueueSize()) {
-    auto buffer = world.PopSendPacket();
-    game->SendToAll(buffer);
+    OutPacket out_packet = world.PopSendPacket();
+    if (out_packet.type() == OutPacket::BROADCAST) {
+      game->SendToAll(out_packet.data());
+    } else {
+      game->SendToClient(out_packet.data(), out_packet.receiver());
+    }
   }
 }
 
