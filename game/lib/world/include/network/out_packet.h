@@ -11,7 +11,7 @@ namespace nan2 {
 
   private:
 
-    std::vector<uint8_t> data_;
+    std::vector<int8_t> data_;
     int type_;
     uint64_t receiver_;
 
@@ -21,9 +21,9 @@ namespace nan2 {
     static int BROADCAST;
     static int UNICAST;
 
-    OutPacket(const std::vector<uint8_t>& data, int type, uint64_t receiver = 0);
+    OutPacket(const std::vector<int8_t>& data, int type, uint64_t receiver = 0);
 
-    const std::vector<uint8_t>& data() const;
+    const std::vector<int8_t>& data() const;
     int type() const;
     uint64_t receiver() const;
 

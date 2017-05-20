@@ -14,7 +14,7 @@ namespace nan2 {
 
   public:
 
-    PlayerInputPacketParser(uint8_t* data, unsigned int size);
+    PlayerInputPacketParser(int8_t* data, unsigned int size);
 
     std::vector<PlayerInputPacket> Parse(int& out_player_id);
 

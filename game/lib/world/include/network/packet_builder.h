@@ -16,8 +16,8 @@ namespace nan2 {
     ~PacketBuilder();
 
     int packet_type_;
-    std::vector<uint8_t> buffer_vector_;
-    uint8_t* buffer_array_;
+    std::vector<int8_t> buffer_vector_;
+    int8_t* buffer_array_;
     bool clean_;
 
     void AppendInt(uint32_t i);
@@ -28,8 +28,8 @@ namespace nan2 {
 
   public:
 
-    const uint8_t* ToArray();
-    const std::vector<uint8_t>& GetBufferVector() const;
+    const int8_t* ToArray();
+    const std::vector<int8_t>& GetBufferVector() const;
     void Clear();
 
   };

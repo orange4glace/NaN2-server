@@ -1,6 +1,6 @@
 // entity.h
-#ifndef ENTITY_H
-#define ENTITY_H
+#ifndef ENTITY_H_
+#define ENTITY_H_
 
 #include <nan2/math/vector2.h>
 
@@ -9,8 +9,9 @@ namespace nan2 {
   // Forward declaration
   class World;
 
-  typedef unsigned char entity_type;
   typedef unsigned short entity_id;
+  typedef unsigned char entity_group;
+  typedef unsigned char entity_type;
 
   class Entity {
 
@@ -22,6 +23,7 @@ namespace nan2 {
     
     int internal_id_;
     entity_id id_;
+    entity_group group_;
     entity_type type_;
 
     World* world_;
@@ -31,11 +33,21 @@ namespace nan2 {
 
   public:
 
+    static const entity_group GROUP_CHARACTER = 1;
+    static const entity_group GROUP_WEAPON = 2;
+    static const entity_group GROUP_BULLET = 3;
+    static const entity_group GROUP_BREAKABLE = 4;
+    static const entity_group GROUP_DROPPED_ITEM = 5;
+
+    static const entity_type TYPE_BREAKABLE = 1;
+    static const entity_type TYPE_DROPPED_ITEM = 2;
+
     Entity(World* world);
     
     World& world();
     int internal_id() const;
     entity_id id() const;
+    entity_group group() const;
     entity_type type() const;
     const Vector2& position() const;
     virtual void OnCreate() {};

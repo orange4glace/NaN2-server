@@ -3,6 +3,7 @@
 
 #include "logger/logger.h"
 
+#include "flatbuffers/world_guaranteed_generated.h"
 #include "flatbuffers/entity_created_generated.h"
 
 namespace nan2 {
@@ -26,11 +27,40 @@ namespace nan2 {
 
     AppendInt(PacketType::WORLD_GUARANTEED);
 
-    flatbuffers::FlatBufferBuilder builder_;
+    flatbuffers::FlatBufferBuilder builder;
 
-    std::vector<flatbuffers::Offset<fb::EntityCreated>> entity_created_vector;
-    std::vector<flatbuffers::Offset<uint16_t>> entity_destroied_vector;
+    std::vector<flatbuffers::Offset<fb::EntityCreated>> entities_created_vector;
+    std::vector<uint16_t> entities_destroied_vector;
 
+    while (entity_created_.size()) {
+      const EntityCreatedPacket& packet = entity_created_.front();
+      fb::EntityCreatedBuilder entity_created_builder(builder);
+      entity_created_builder.add_id(packet.entity_id());
+      entity_created_builder.add_type(packet.entity_type());
+      fb::Vec2 pos(packet.position().x(), packet.position().y());
+      entity_created_builder.add_position(&pos);
+      auto offset = entity_created_builder.Finish();
+      entities_created_vector.push_back(offset);
+      entity_created_.pop();
+    }
+    auto entities_created = builder.CreateVector(entities_created_vector);
+
+    while (entity_destroied_.size()) {
+      const EntityDestroiedPacket& packet = entity_destroied_.front();
+      entities_destroied_vector.push_back(packet.entity_id());
+      entity_destroied_.pop();
+    }
+    auto entities_destroied = builder.CreateVector(entities_destroied_vector);
+
+    fb::WorldGuaranteedBuilder world_guaranteed_builder(builder);
+    world_guaranteed_builder.add_entities_created(entities_created);
+    world_guaranteed_builder.add_entities_destroied(entities_destroied);
+
+    auto world_guaranteed_offset = world_guaranteed_builder.Finish();
+
+    builder.Finish(world_guaranteed_offset);
+
+    AppendFlatBuffer(builder);
   }
 
   void WorldGuaranteedPacketBuilder::Clear() {

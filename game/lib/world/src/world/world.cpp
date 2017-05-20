@@ -12,6 +12,7 @@
 #include "flatbuffers/world_generated.h"
 
 #include <cassert>
+#include <algorithm>
 
 namespace nan2 {
 
@@ -24,10 +25,8 @@ namespace nan2 {
     world_map_ = new WorldMap();
 
     // Fill entity id pool
-    for (short i = 1; i < 65536; i ++) entity_id_pool_.push(i);
-
-    RootBox* root_box = new RootBox(this, Vector2(30, 30));
-    root_boxes_.insert(root_box);
+    for (unsigned short i = 1; i < 65535; i ++)
+      entity_id_pool_.push(i);
   }
 
   World::World(WorldMap* world_map) : 
@@ -175,22 +174,40 @@ namespace nan2 {
     return players_;
   }
 
-  bool World::CreateRandomDroppedItemAt(const Vector2& position, DroppedItem*& spawned_item) {
-    short id = AcquireEntityId();
+  bool World::CreateEntity(Entity* entity) {
+    entity_id id = AcquireEntityId();
     if (id == 0) return false;
+    entities_[entity->group()].insert(entity);
+    world_guaranteed_packet_builder_.AddEntityCreated(entity);
+  }
+
+  void World::DestroyEntity(Entity* entity) {
+    if (entity == nullptr) return;
+    entities_[entity->group()].erase(entity);
+    ReleaseEntityId(entity->id());
+    delete entity;
+
+    L_DEBUG << "Entity Removed (id : " << entity->id() << ", type = " << entity->type() << ")";
+  }
+
+  void World::IterateEntityGroup(entity_group group, std::function<bool(Entity*)> func) {
+    auto& entity_set = entities_[group];
+    auto it = entity_set.begin();
+    while (it != entity_set.end()) {
+      bool r = func(*it);
+      if (!r) break;
+      it ++;
+    }
+  }
+
+  bool World::CreateRandomDroppedItemAt(const Vector2& position, DroppedItem*& spawned_entity) {
     DroppedItem* item = new DroppedItem(this, position);
-    dropped_items_.insert(item);
-    spawned_item = item;
-    world_guaranteed_packet_builder_.AddEntityCreated(item);
+    if (!CreateEntity(item)) {
+      delete item;
+      return false;
+    }
+    spawned_entity = item;
     return true;
-  }
-
-  std::set<RootBox*, entity_comparator>& World::root_boxes() {
-    return root_boxes_;
-  }
-
-  std::set<DroppedItem*, entity_comparator>& World::dropped_items() {
-    return dropped_items_;
   }
 
 
@@ -204,9 +221,9 @@ namespace nan2 {
     world_guaranteed_packet_builder_.Clear();
   }
 
-  void World::OnPacketReceived(boost::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id) {
-    std::vector<char>& buffer_vector = *buffer;
-    uint8_t* buffer_array = new uint8_t[size];
+  void World::OnPacketReceived(boost::shared_ptr<std::vector<int8_t>> buffer, unsigned int& size, uint64_t client_id) {
+    std::vector<int8_t>& buffer_vector = *buffer;
+    int8_t* buffer_array = new int8_t[size];
     std::copy(buffer_vector.begin(), buffer_vector.end(), buffer_array);
 
     packet_type type = PacketParser::GetPacketType(buffer_array);
@@ -232,7 +249,7 @@ namespace nan2 {
     delete buffer_array;
   }
 
-  void World::ParsePlayerInputPacket(uint8_t* buffer, unsigned int size, uint64_t client_id) {
+  void World::ParsePlayerInputPacket(int8_t* buffer, unsigned int size, uint64_t client_id) {
     PlayerInputPacketParser parser(buffer, size);
     int player_id;
     auto player_inputs = parser.Parse(player_id);
@@ -244,7 +261,7 @@ namespace nan2 {
       player->character().AddInput(input);
   }
 
-  void World::ParsePongPacket(uint8_t* buffer, unsigned int size) {
+  void World::ParsePongPacket(int8_t* buffer, unsigned int size) {
     PongPacketParser parser(buffer, size);
     int player_id;
     int seq = parser.Parse(player_id);

@@ -9,7 +9,7 @@ INC_PATH = include
 TARGET_PATH = test
 
 LIB_SRCS_NAKED = world_time.cpp math_helper.cpp \
-	entity/entity.cpp entity/updatable.cpp entity/root_box.cpp entity/dropped_item.cpp entity/bullet.cpp entity/character.cpp \
+	entity/entity.cpp entity/updatable.cpp entity/breakable.cpp entity/dropped_item.cpp entity/bullet.cpp entity/character.cpp \
 	entity/machine_gun.cpp entity/machine_gun_bullet.cpp entity/weapon.cpp entity/player.cpp entity/character_tick_data.cpp \
 	entity/collider_interface.cpp \
 	network/character_snapshot.cpp network/player_input_packet.cpp network/bullet_packet.cpp \

@@ -1,6 +1,6 @@
 // machine_gun.h
-#ifndef MACHINE_GUN_H
-#define MACHINE_GUN_H
+#ifndef MACHINE_GUN_H_
+#define MACHINE_GUN_H_
 
 #include "weapon.h"
 

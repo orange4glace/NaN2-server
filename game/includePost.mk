@@ -29,12 +29,12 @@ PRE_CHECK :
 	@echo "= Build started "
 	@echo "= $(BUILD_TYPE) mode "
 	@echo "==================================================="
-	@echo "= Directory check "
+	@echo "= Directory check $(LIB_HEADERS)"
 	@`[ -d $(LIB_INC_COPIED_DIR) ] || $(MKDIR) -p $(LIB_INC_COPIED_DIR)`
 	@`[ -d $(OBJS_DIR)/$(SRC_PATH) ] || $(MKDIR) -p $(OBJS_DIR)/$(SRC_PATH)`
 	@`[ -d $(OBJS_DIR)/$(TARGET_PATH) ] || $(MKDIR) -p $(OBJS_DIR)/$(TARGET_PATH)`
 
-$(LIB_INC_COPIED) :
+$(LIB_INC_COPIED) : $(LIB_INC_COPIED_DIR)/%.h : $(INC_PATH)/%.h
 	@echo "= Copying $@ "
 	@`[ -d $(@D) ] || $(MKDIR) -p $(@D)`
 	$(CP) $(@:$(LIB_INC_COPIED_DIR:./%=%)/%=$(INC_PATH)/%) $@

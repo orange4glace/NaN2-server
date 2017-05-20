@@ -8,13 +8,13 @@
 
 namespace nan2 {
 
-  PacketParser::PacketParser(uint8_t* data, unsigned int size):
+  PacketParser::PacketParser(int8_t* data, unsigned int size):
     size_(size) {
-    data_= new uint8_t[size];
+    data_= new int8_t[size];
     std::memcpy(data_, data, size);
   }
 
-  packet_type PacketParser::GetPacketType(uint8_t* data) {
+  packet_type PacketParser::GetPacketType(int8_t* data) {
     int type = (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | (data[0]);
     switch (type) {
       case PacketType::PING:
@@ -50,9 +50,9 @@ namespace nan2 {
     return result;
   }
 
-  uint8_t* PacketParser::ReadBytes(unsigned int size) {
+  int8_t* PacketParser::ReadBytes(unsigned int size) {
     Take(size);
-    uint8_t* result = new uint8_t[size];
+    int8_t* result = new int8_t[size];
     std::memcpy(result, data_ + offset_ - size, size);
     return result;
   }

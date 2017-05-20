@@ -5,7 +5,7 @@
 
 namespace nan2 {
 
-  PongPacketParser::PongPacketParser(uint8_t* data, unsigned int size):
+  PongPacketParser::PongPacketParser(int8_t* data, unsigned int size):
     PacketParser(data, size) {
     packet_type_ = PacketType::PONG;
   }

@@ -5,7 +5,7 @@
 
 namespace nan2 {
 
-  PlayerInputPacketParser::PlayerInputPacketParser(uint8_t* data, unsigned int size):
+  PlayerInputPacketParser::PlayerInputPacketParser(int8_t* data, unsigned int size):
     PacketParser(data, size) {
     packet_type_ = PacketType::PLAYER_INPUT;
   }
@@ -16,7 +16,7 @@ namespace nan2 {
     if (type != PacketType::PLAYER_INPUT) TypeMismatchException(type);
 
     int packet_size = ReadInt();
-    uint8_t* buffer = ReadBytes(packet_size);
+    int8_t* buffer = ReadBytes(packet_size);
     auto player_inputs = fb::GetPlayerInputs(buffer);
     out_player_id = player_inputs->player_id();
     auto player_inputs_vector = player_inputs->inputs();
