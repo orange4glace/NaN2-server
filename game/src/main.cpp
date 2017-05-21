@@ -46,12 +46,12 @@ void packet_handler(mgne::Packet &p)
   int session_id = p.GetSessionId();
   InterfaceGame* game = games[session_id];
 
-  /*
-  std::function<void()> process_packet(
-    std::bind(&World::OnPacketReceived, games[session_id]->GetWorld(),
-    p.GetPacketData(), p.GetPacketSize()));
+  std::function<void()> process_packet([&](){
+    World& world = games[session_id]->GetWorld();
+    std::shared_ptr<std::vector<char>> ptr = p.GetPacketData();
+    //world.OnPacketReceived(ptr, p.GetPacketSize(), p.GetSessionId());
+  });
   world_queues[game->GetId() % WORLD_THREAD].Push(process_packet);
-  */
 }
 
 int admit_handler(mgne::Packet &p)
@@ -73,6 +73,7 @@ int admit_handler(mgne::Packet &p)
   redis_client.sync_commit();
   
   game_map.Lock();
+
   auto it = game_map.Find(game_num);
   if (it == game_map.end()) {
     if (game_mode == GameMode::DEATH) {
@@ -82,12 +83,10 @@ int admit_handler(mgne::Packet &p)
       // deal with other game modes..
     }
   }
+
   games[p.GetSessionId()] = it->second.get();
   if (it->second->EnterGame(p.GetSessionId()) == 0) {
-    // send start packet to every body
     update_world(it->second.get());
-    // throw update function
-    // to queue_[game_num % NUM_WORLD_THREAD]
   }
 
   // TODO : need to reply
@@ -111,6 +110,15 @@ int main( )
   server = new mgne::udp::Server(endpoint, MAX_SESSION_CAPACITY, 3, 3,
     packet_handler, admit_handler);
 
-  server->Run();
+  server->RunNonBlock();
+
+  for (int i = 0; i < WORLD_THREAD; i++) {
+    std::thread{[&,=i](){
+      while (1) {
+        auto job = world_queues[i].Pop();
+        job();
+      }
+    }};
+  }
   return 0;
 }

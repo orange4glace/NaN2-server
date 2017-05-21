@@ -234,7 +234,7 @@ namespace nan2 {
     world_guaranteed_packet_builder_.Clear();
   }
 
-  void World::OnPacketReceived(boost::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id) {
+  void World::OnPacketReceived(std::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id) {
     std::vector<char>& buffer_vector = *buffer;
     int8_t* buffer_array = new int8_t[size];
     std::copy(buffer_vector.begin(), buffer_vector.end(), buffer_array);
