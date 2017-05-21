@@ -21,11 +21,11 @@ namespace nan2 {
     entity_destroied_.push(EntityDestroiedPacket(entity));
   }
 
-  void WorldGuaranteedPacketBuilder::Build(World& world) {
+  void WorldGuaranteedPacketBuilder::Build() {
     if (!clean_) Clear();
     clean_ = false;
 
-    AppendInt(PacketType::WORLD_GUARANTEED);
+    AppendInt(5);
 
     flatbuffers::FlatBufferBuilder builder;
 

@@ -9,8 +9,10 @@ namespace nan2 {
 
   int Entity::next_internal_id_ = 0;
 
-  Entity::Entity(World* world) :
-    world_(world) {
+  Entity::Entity(World* world, entity_group group, entity_type type) :
+    world_(world),
+    group_(group),
+    type_(type) {
       assert(world != nullptr);
       internal_id_ = Updatable::next_internal_id_++;
   }

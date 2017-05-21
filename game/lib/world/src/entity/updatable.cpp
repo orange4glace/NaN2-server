@@ -6,7 +6,7 @@
 namespace nan2 {
 
   Updatable::Updatable(World* world) :
-    Entity(world),
+    Entity(world, 0, 0),
     is_on_stage_(false) {
   }
   

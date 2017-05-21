@@ -7,12 +7,13 @@ namespace nan2 {
   int OutPacket::UNICAST = 2;
 
   OutPacket::OutPacket(const std::vector<int8_t>& data, int type, uint64_t receiver) :
-    data_(data),
     type_(type),
     receiver_(receiver) {
+    data_.resize(data.size());
+    std::copy(data.begin(), data.end(), data_.begin());
   }
 
-  const std::vector<int8_t>& OutPacket::data() const {
+  const std::vector<char>& OutPacket::data() const {
     return data_;
   }
 

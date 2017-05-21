@@ -29,9 +29,9 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
     if (!error)
     {
         try {
-            std::vector<int8_t>* message = new std::vector<int8_t>(bytes_transferred);
+            std::vector<char>* message = new std::vector<char>(bytes_transferred);
             std::copy(recv_buffer.data(), recv_buffer.data() + bytes_transferred, message->begin());
-            boost::shared_ptr<std::vector<int8_t>> ptr(message);
+            boost::shared_ptr<std::vector<char>> ptr(message);
             ClientMessage* cm = new ClientMessage();
             cm->client_id = get_client_id(remote_endpoint);
             cm->data = ptr;
@@ -55,7 +55,7 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
     start_receive();
 }
 
-void NetworkServer::send(const std::vector<int8_t>& buffer, udp::endpoint target_endpoint)
+void NetworkServer::send(const std::vector<char>& buffer, udp::endpoint target_endpoint)
 {
     socket.send_to(boost::asio::buffer(buffer), target_endpoint);
     sentBytes += buffer.size();
@@ -90,7 +90,7 @@ uint64_t NetworkServer::get_client_id(udp::endpoint endpoint)
     return nextClientID;
 };
 
-void NetworkServer::SendToClient(const std::vector<int8_t>& buffer, uint64_t clientID, bool guaranteed) 
+void NetworkServer::SendToClient(const std::vector<char>& buffer, uint64_t clientID, bool guaranteed) 
 { 
 
     try {
@@ -101,7 +101,7 @@ void NetworkServer::SendToClient(const std::vector<int8_t>& buffer, uint64_t cli
     }
 };
 
-void NetworkServer::SendToAllExcept(const std::vector<int8_t>& buffer, uint64_t clientID, bool guaranteed)
+void NetworkServer::SendToAllExcept(const std::vector<char>& buffer, uint64_t clientID, bool guaranteed)
 {
 
     for (auto client: clients)
@@ -109,7 +109,7 @@ void NetworkServer::SendToAllExcept(const std::vector<int8_t>& buffer, uint64_t 
             send(buffer, client.right);
 };
 
-void NetworkServer::SendToAll(const std::vector<int8_t>& buffer, bool guaranteed)
+void NetworkServer::SendToAll(const std::vector<char>& buffer, bool guaranteed)
 {
 
     for (auto client: clients)
