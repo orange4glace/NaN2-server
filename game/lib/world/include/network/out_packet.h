@@ -11,7 +11,7 @@ namespace nan2 {
 
   private:
 
-    std::vector<int8_t> data_;
+    std::vector<char> data_;
     int type_;
     uint64_t receiver_;
 
@@ -23,7 +23,7 @@ namespace nan2 {
 
     OutPacket(const std::vector<int8_t>& data, int type, uint64_t receiver = 0);
 
-    const std::vector<int8_t>& data() const;
+    const std::vector<char>& data() const;
     int type() const;
     uint64_t receiver() const;
 

@@ -122,7 +122,7 @@ namespace nan2 {
 
     bool CreateRandomDroppedItemAt(const Vector2& position);
 
-    void OnPacketReceived(boost::shared_ptr<std::vector<int8_t>> buffer, unsigned int& size, uint64_t client_id);
+    void OnPacketReceived(boost::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id);
     void ParsePlayerInputPacket(int8_t* buffer, unsigned int size, uint64_t client_id);
     void ParsePongPacket(int8_t* buffer, unsigned int size);
 
