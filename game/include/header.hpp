@@ -13,6 +13,7 @@
 
 #include <mgne/mgne.hpp>
 #include <boost/asio.hpp>
+#include <boost/thread.hpp>
 
 // -- Redis --
 #include "../../include/redis.h"

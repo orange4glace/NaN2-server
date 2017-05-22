@@ -1,8 +1,7 @@
 #include "header.hpp"
 
 #define MAX_SESSION_CAPACITY 500
-#define    MAX_GAME_CAPACITY 500
-
+#define    MAX_GAME_CAPACITY 500 
 #define WORLD_THREAD         3
 
 using namespace nan2;
@@ -46,10 +45,11 @@ void packet_handler(mgne::Packet &p)
   int session_id = p.GetSessionId();
   InterfaceGame* game = games[session_id];
 
-  std::function<void()> process_packet([&](){
+  std::shared_ptr<std::vector<char>> ptr = p.GetPacketData();
+  std::function<void()> process_packet([&, ptr](){
     World& world = games[session_id]->GetWorld();
-    std::shared_ptr<std::vector<char>> ptr = p.GetPacketData();
-    //world.OnPacketReceived(ptr, p.GetPacketSize(), p.GetSessionId());
+    unsigned int packet_size = p.GetPacketSize();
+    world.OnPacketReceived(ptr, packet_size, p.GetSessionId());
   });
   world_queues[game->GetId() % WORLD_THREAD].Push(process_packet);
 }
@@ -98,13 +98,15 @@ int admit_handler(mgne::Packet &p)
 
 int main( )
 {
-  redis_client.connect(REDIS_URL, REDIS_PORT, [](cpp_redis::redis_client&) {
+  try {
+    redis_client.connect(REDIS_URL, REDIS_PORT, [](cpp_redis::redis_client&) {
+      std::cout << "# ERR: redis connection lost" << std::endl;
+      exit(-1);
+    });
+    std::cout << " - Redis Connection success" << std::endl;
+  } catch(...) {
     std::cout << "# ERR: redis connection lost" << std::endl;
-    exit(-1);
-  });
-
-  redis_client.sync_commit();
-  std::cout << " - Redis Connection success" << std::endl;
+  }
 
   boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::udp::v4(), 4000);
   server = new mgne::udp::Server(endpoint, MAX_SESSION_CAPACITY, 3, 3,
@@ -112,13 +114,20 @@ int main( )
 
   server->RunNonBlock();
 
+  boost::thread_group tg;
   for (int i = 0; i < WORLD_THREAD; i++) {
-    std::thread{[&,=i](){
-      while (1) {
-        auto job = world_queues[i].Pop();
-        job();
+    tg.create_thread([&,i](){
+      while(1) {
+        std::function<void()> job;
+        if (world_queues[i].Pop(job)) {
+          job();
+        }
       }
-    }};
+    });
   }
+
+  tg.join_all();
+
   return 0;
 }
+
