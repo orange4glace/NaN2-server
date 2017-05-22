@@ -31,7 +31,7 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
         try {
             std::vector<char>* message = new std::vector<char>(bytes_transferred);
             std::copy(recv_buffer.data(), recv_buffer.data() + bytes_transferred, message->begin());
-            boost::shared_ptr<std::vector<char>> ptr(message);
+            std::shared_ptr<std::vector<char>> ptr(message);
             ClientMessage* cm = new ClientMessage();
             cm->client_id = get_client_id(remote_endpoint);
             cm->data = ptr;

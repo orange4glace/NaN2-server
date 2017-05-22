@@ -7,18 +7,18 @@
 #include <boost/bimap.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <string>
 #include <vector>
 #include <array>
 #include <map>
+#include <memory>
 
 using boost::asio::ip::udp;
 
 struct ClientMessage {
     uint64_t client_id;
-    boost::shared_ptr<std::vector<char>> data;
+    std::shared_ptr<std::vector<char>> data;
     unsigned int size;
 };
 
