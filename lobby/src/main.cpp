@@ -70,7 +70,7 @@ int game_handler(GroupSet& A, GroupSet& B, GameMode mode)
     builder.Finish(match_ntf);
 
     games[game_count] = mode;
-
+    redis_client.set(std::to_string(game_count), std::to_string(mode));
     std::vector<int> sessions; 
     for (auto& group : A) {
       sessions.clear();
@@ -95,12 +95,12 @@ int game_handler(GroupSet& A, GroupSet& B, GameMode mode)
       game_matching_queue.Erase(group, mode);
     }
     game_count++;
-    redis_client.sync_commit();
   }
 
   for (auto& group : A) group->Unlock();
   for (auto& group : B) group->Unlock();
-
+  
+  redis_client.sync_commit();
   return state;
 }
 
