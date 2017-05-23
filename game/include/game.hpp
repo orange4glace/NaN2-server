@@ -44,9 +44,10 @@ public:
 
   int EnterGame(int client_id)
   {
-    if (num_people_ == sizes[mode]) return -1;
+    std::cout << "game_num : " << id_ << ", entered " << client_id << std::endl;
+    if (num_people_ == sizes[mode] * 2) return -1;
     clients_[num_people_++] = client_id;
-    if (num_people_ == sizes[mode]) return 0;
+    if (num_people_ == sizes[mode] * 2) return 0;
     return 1;
   }
 
@@ -75,7 +76,7 @@ private:
   boost::asio::deadline_timer update_timer_;
   World world_;
 
-  std::array<int, sizes[mode]> clients_;
+  std::array<int, sizes[mode] * 2> clients_;
   int num_people_;
   int id_;
 };

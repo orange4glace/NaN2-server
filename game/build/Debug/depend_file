@@ -1,0 +1,2 @@
+build/Debug/src/test_class.o: src/test_class.cpp
+build/Debug/test/test.o: test/test.cpp

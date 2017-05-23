@@ -21,7 +21,7 @@ int read_(boost::asio::ip::udp::socket& socket, char* buffer, int len)
   return socket.receive_from(boost::asio::buffer(buffer, len), endpoint);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
   boost::asio::io_service io_service;
   boost::asio::ip::udp::endpoint ep(boost::asio::ip::udp::v4(), 0);
@@ -30,16 +30,16 @@ int main()
   int len;
   char buffer[1024];
 
-  std::string token("ICrPIeNZmru52g&#D1*8");
+  std::string token(argv[0]);
 
-  ((UDP_PACKET_HEADER*)buffer)->packet_size = sizeof(UDP_PACKET_HEADER) + 20;
+  ((UDP_PACKET_HEADER*)buffer)->packet_size = sizeof(UDP_PACKET_HEADER) + token.size();
   ((UDP_PACKET_HEADER*)buffer)->packet_id = PACKET_ADMIT_REQ;
 
   for (int i = 0; i < 20; i++) {
     buffer[i + sizeof(UDP_PACKET_HEADER)] = token[i];
   }
 
-  write_(socket, buffer, sizeof(UDP_PACKET_HEADER) + 20);
+  write_(socket, buffer, sizeof(UDP_PACKET_HEADER) + token.size());
 
   read_(socket, buffer, sizeof(UDP_PACKET_HEADER) + sizeof(short));
   std::cout << *((short*)(buffer + sizeof(UDP_PACKET_HEADER))) << std::endl;

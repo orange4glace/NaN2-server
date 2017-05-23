@@ -11,6 +11,7 @@ typedef mgne::pattern::ThreadJobQueue<std::function<void()>> WorldQueue;
 cpp_redis::redis_client redis_client;
 
 boost::asio::io_service update_service;
+boost::asio::io_service::work update_work(update_service);
 std::array<WorldQueue, WORLD_THREAD> world_queues;
 std::array<InterfaceGame*, MAX_SESSION_CAPACITY> games;
 
@@ -56,7 +57,6 @@ void packet_handler(mgne::Packet &p)
 
 int admit_handler(mgne::Packet &p)
 {
-  std::cout << "receiving admit req" << std::endl;
   if (p.GetPacketId() != PACKET_ADMIT_REQ) return -1;
 
   int game_num = -1;
@@ -66,33 +66,34 @@ int admit_handler(mgne::Packet &p)
   redis_client.hget(token, "game_num", [&game_num](cpp_redis::reply& reply) {
     game_num = std::stoi(reply.as_string());
   });
-  redis_client.hget(token, "game_mode", [&game_mode](cpp_redis::reply& reply) {
-    game_mode = (GameMode)std::stoi(reply.as_string());
-  });
-
   redis_client.sync_commit();
   
   game_map.Lock();
-
-  auto it = game_map.Find(game_num);
-  if (it == game_map.end()) {
+  if (game_map.Find(game_num) == game_map.end()) {
+    redis_client.get(std::to_string(game_num),
+      [&game_mode](cpp_redis::reply& reply) {
+      game_mode = (GameMode)std::stoi(reply.as_string());
+    });
+    redis_client.sync_commit();
+    std::cout << "creating new game..!" << std::endl;
+    std::cout << "game num : " << game_num << ", game mode: " << game_mode <<
+      std::endl;
     if (game_mode == GameMode::DEATH) {
-      it->second.reset(new Game<GameMode::DEATH>(server, update_service,
+      game_map[game_num].reset(new Game<GameMode::DEATH>(server, update_service,
         game_num));
     } else {
       // deal with other game modes..
     }
   }
-
-  games[p.GetSessionId()] = it->second.get();
-  if (it->second->EnterGame(p.GetSessionId()) == 0) {
-    update_world(it->second.get());
+  games[p.GetSessionId()] = game_map[game_num].get();
+  std::cout << games[p.GetSessionId()]->GetId() << std::endl;
+  if (games[p.GetSessionId()]->EnterGame(p.GetSessionId()) == 0) {
+    std::cout << "All entered..! start updating.." << std::endl;
+    std::cout << games[p.GetSessionId()]->GetId() << std::endl;
+    update_world(games[p.GetSessionId()]);
   }
-
   // TODO : need to reply
   game_map.Unlock();
-
-  std::cout << "token : " << token << ", game_num : " << game_num << std::endl;
   return game_num;
 }
 
@@ -126,6 +127,7 @@ int main( )
     });
   }
 
+  update_service.run();
   tg.join_all();
 
   return 0;
