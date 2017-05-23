@@ -180,6 +180,10 @@ namespace nan2 {
     return players_;
   }
 
+  bool World:RemovePlayer(int id) {
+    
+  }
+
   bool World::CreateEntity(Entity* entity) {
     entity_id id = AcquireEntityId();
     if (id == 0) return false;
