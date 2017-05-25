@@ -126,6 +126,7 @@ namespace nan2 {
       Vector2 dv = AABB::SimpleAABB(cur, aabb);
       position_ += dv;
     }
+    L_DEBUG << "Character " << player_->id() << " moved to " << position_;
   }
 
   void Character::Dash(unsigned char dir) {

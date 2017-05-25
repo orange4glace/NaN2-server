@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   int len;
   char buffer[1024];
 
-  std::string token(argv[0]);
+  std::string token(argv[1]);
 
   ((UDP_PACKET_HEADER*)buffer)->packet_size = sizeof(UDP_PACKET_HEADER) + token.size();
   ((UDP_PACKET_HEADER*)buffer)->packet_id = PACKET_ADMIT_REQ;
@@ -41,8 +41,17 @@ int main(int argc, char *argv[])
 
   write_(socket, buffer, sizeof(UDP_PACKET_HEADER) + token.size());
 
-  read_(socket, buffer, sizeof(UDP_PACKET_HEADER) + sizeof(short));
-  std::cout << *((short*)(buffer + sizeof(UDP_PACKET_HEADER))) << std::endl;
+  int count = 0;
+  while(1)
+  {
+    read_(socket, buffer, sizeof(UDP_PACKET_HEADER) + sizeof(short));
+    int packet_size = ((UDP_PACKET_HEADER*)buffer)->packet_size;
+    std::cerr << count++ << " ";
+    for (int i = 0 ; i < packet_size; i++) {
+      std::cerr << (short)buffer[i] << " ";
+    }
+    std::cerr << "  |  ";
+  }
 
   return 0;
 }

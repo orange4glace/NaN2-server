@@ -63,6 +63,9 @@ int admit_handler(mgne::Packet &p)
   GameMode game_mode;
 
   std::string token(p.GetPacketData()->data(), p.GetPacketSize());
+  std::cout << p.GetSessionId() << std::endl;
+  std::cout << token << std::endl;
+  
   redis_client.hget(token, "game_num", [&game_num](cpp_redis::reply& reply) {
     game_num = std::stoi(reply.as_string());
   });
@@ -121,6 +124,8 @@ int main( )
       while(1) {
         std::function<void()> job;
         if (world_queues[i].Pop(job)) {
+          std::cout << "rqueue : " << world_queues[i].rqueue_->size() << std::endl;
+          std::cout << "wqueue : " << world_queues[i].wqueue_->size() << std::endl;
           job();
         }
       }

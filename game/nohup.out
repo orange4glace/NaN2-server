@@ -1,0 +1,15 @@
+ - Redis Connection success
+creating new game..!
+game num : 11, game mode: 0
+[2017-05-24 18:24:29.753502] [0x00007ffff5425700] [debug]   World map initialized
+[2017-05-24 18:24:29.756607] [0x00007ffff5425700] [debug]   Entity Created 32767 4 1
+11
+game_num : 11, entered 1
+11
+game_num : 11, entered 2
+11
+game_num : 11, entered 3
+11
+game_num : 11, entered 4
+All entered..! start updating..
+11
