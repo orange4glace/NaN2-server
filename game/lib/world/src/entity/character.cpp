@@ -106,6 +106,12 @@ namespace nan2 {
     snapshot_.SetDashDir(dash_dir_);
     CharacterTickData tickData(Time::current_fixed_time(), position_, true);
     SaveTickData(tickData);
+
+    while (history_.size()) {
+      CharacterTickData& td = history_.front();
+      if (td.time() + 2000 < Time::current_fixed_time()) history_.pop_front();
+      else break;
+    }
   }
 
   void Character::Move252(unsigned char dir, float time) {

@@ -112,6 +112,7 @@ namespace nan2 {
 
     Player* AddPlayer(int id);
     Player* GetPlayer(int id);
+    bool RemovePlayer(int id);
     std::map<int, Player*>& GetPlayers();
     std::set<Entity*, entity_comparator>& entities();
 
