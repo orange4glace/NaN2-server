@@ -180,7 +180,7 @@ namespace nan2 {
     return players_;
   }
 
-  bool World:RemovePlayer(int id) {
+  bool World::RemovePlayer(int id) {
     
   }
 
