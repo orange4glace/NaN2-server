@@ -26,11 +26,13 @@ void NetworkServer::start_receive()
 
 void NetworkServer::handle_receive(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
-    if (!error)
+    bool er = (bytes_transferred < 4);
+    bytes_transferred -= 4;
+    if (!error && !er)
     {
         try {
             std::vector<char>* message = new std::vector<char>(bytes_transferred);
-            std::copy(recv_buffer.data(), recv_buffer.data() + bytes_transferred, message->begin());
+            std::copy(recv_buffer.data() + 4, recv_buffer.data() + 4 + bytes_transferred, message->begin());
             std::shared_ptr<std::vector<char>> ptr(message);
             ClientMessage* cm = new ClientMessage();
             cm->client_id = get_client_id(remote_endpoint);

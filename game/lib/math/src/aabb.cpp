@@ -42,10 +42,13 @@ namespace nan2 {
     else return 1;
   }
 
-  Vector2 AABB::SimpleAABB(const AABB& src, const AABB& tar) {
+  Vector2 AABB::SimpleAABB(const AABB& src, const AABB& tar, bool& out_collided) {
     Rect minkowski = tar.rect().MinkowskiDifference(src.rect());
-    if (!minkowski.ContainsPoint(Vector2::ZERO)) return Vector2::ZERO;
-
+    if (!minkowski.ContainsPoint(Vector2::ZERO)) {
+      out_collided = false;
+      return Vector2::ZERO;
+    }
+    out_collided = true;
     return minkowski.ClosestPointOnBoundsToPoint(Vector2::ZERO);
   }
 

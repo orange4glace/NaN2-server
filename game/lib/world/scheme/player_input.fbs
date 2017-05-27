@@ -1,7 +1,0 @@
-namespace nan2.game.world;
-
-table PlayerInput {
-  move_dir:ubyte;
-  fire_dir:ubyte;
-  time:int;
-}3

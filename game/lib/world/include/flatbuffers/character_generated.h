@@ -7,6 +7,7 @@
 #include "flatbuffers/flatbuffers.h"
 
 #include "bullet_generated.h"
+#include "entity_obtained_generated.h"
 #include "vec2_generated.h"
 
 namespace nan2 {
@@ -26,7 +27,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_WEAPON_MAGAZINE = 16,
     VT_WEAPON_AMMO = 18,
     VT_WEAPON_COOLDOWN = 20,
-    VT_WEAPON_RELOAD_TIME = 22
+    VT_WEAPON_RELOAD_TIME = 22,
+    VT_ENTITIES_OBTAINED = 24
   };
   const nan2::game::world::Vec2 *pos() const {
     return GetStruct<const nan2::game::world::Vec2 *>(VT_POS);
@@ -58,6 +60,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int32_t weapon_reload_time() const {
     return GetField<int32_t>(VT_WEAPON_RELOAD_TIME, 0);
   }
+  const flatbuffers::Vector<flatbuffers::Offset<nan2::game::world::EntityObtained>> *entities_obtained() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<nan2::game::world::EntityObtained>> *>(VT_ENTITIES_OBTAINED);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<nan2::game::world::Vec2>(verifier, VT_POS) &&
@@ -72,6 +77,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyField<int32_t>(verifier, VT_WEAPON_AMMO) &&
            VerifyField<int32_t>(verifier, VT_WEAPON_COOLDOWN) &&
            VerifyField<int32_t>(verifier, VT_WEAPON_RELOAD_TIME) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_ENTITIES_OBTAINED) &&
+           verifier.Verify(entities_obtained()) &&
+           verifier.VerifyVectorOfTables(entities_obtained()) &&
            verifier.EndTable();
   }
 };
@@ -109,13 +117,16 @@ struct CharacterBuilder {
   void add_weapon_reload_time(int32_t weapon_reload_time) {
     fbb_.AddElement<int32_t>(Character::VT_WEAPON_RELOAD_TIME, weapon_reload_time, 0);
   }
+  void add_entities_obtained(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<nan2::game::world::EntityObtained>>> entities_obtained) {
+    fbb_.AddOffset(Character::VT_ENTITIES_OBTAINED, entities_obtained);
+  }
   CharacterBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
   CharacterBuilder &operator=(const CharacterBuilder &);
   flatbuffers::Offset<Character> Finish() {
-    const auto end = fbb_.EndTable(start_, 10);
+    const auto end = fbb_.EndTable(start_, 11);
     auto o = flatbuffers::Offset<Character>(end);
     return o;
   }
@@ -132,8 +143,10 @@ inline flatbuffers::Offset<Character> CreateCharacter(
     int32_t weapon_magazine = 0,
     int32_t weapon_ammo = 0,
     int32_t weapon_cooldown = 0,
-    int32_t weapon_reload_time = 0) {
+    int32_t weapon_reload_time = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<nan2::game::world::EntityObtained>>> entities_obtained = 0) {
   CharacterBuilder builder_(_fbb);
+  builder_.add_entities_obtained(entities_obtained);
   builder_.add_weapon_reload_time(weapon_reload_time);
   builder_.add_weapon_cooldown(weapon_cooldown);
   builder_.add_weapon_ammo(weapon_ammo);
@@ -158,7 +171,8 @@ inline flatbuffers::Offset<Character> CreateCharacterDirect(
     int32_t weapon_magazine = 0,
     int32_t weapon_ammo = 0,
     int32_t weapon_cooldown = 0,
-    int32_t weapon_reload_time = 0) {
+    int32_t weapon_reload_time = 0,
+    const std::vector<flatbuffers::Offset<nan2::game::world::EntityObtained>> *entities_obtained = nullptr) {
   return nan2::game::world::CreateCharacter(
       _fbb,
       pos,
@@ -170,7 +184,8 @@ inline flatbuffers::Offset<Character> CreateCharacterDirect(
       weapon_magazine,
       weapon_ammo,
       weapon_cooldown,
-      weapon_reload_time);
+      weapon_reload_time,
+      entities_obtained ? _fbb.CreateVector<flatbuffers::Offset<nan2::game::world::EntityObtained>>(*entities_obtained) : 0);
 }
 
 }  // namespace world

@@ -1,8 +1,0 @@
-include "character.fbs";
-
-namespace nan2.game.world;
-
-table Player {
-  id:ubyte;
-  character:Character;
-}

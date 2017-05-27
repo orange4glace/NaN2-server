@@ -12,6 +12,7 @@ namespace nan2 {
     unsigned char move_dir_;
     unsigned char fire_dir_;
     unsigned char dash_dir_;
+    char extra_command_;
     int time_;
 
   public:

@@ -5,8 +5,8 @@
 
 namespace nan2 {
 
-  Updatable::Updatable(World* world) :
-    Entity(world, 0, 0),
+  Updatable::Updatable(World* world, entity_group group, entity_type type) :
+    Entity(world, group, type),
     is_on_stage_(false) {
   }
   
@@ -22,6 +22,7 @@ namespace nan2 {
   }
 
   void Updatable::Destroy() {
+    active_ = false;
     world_->DestroyUpdatable(this);
   }
 

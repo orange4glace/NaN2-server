@@ -29,7 +29,7 @@ namespace nan2 {
     static float SweptAABB(const AABB& r1, const Vector2& r1v, const AABB& r2, const Vector2& r2v, bool& out_collided);
     
     // Simple AABB collsion detection for regular speed objects.
-    static Vector2 SimpleAABB(const AABB& r1, const AABB& r2);
+    static Vector2 SimpleAABB(const AABB& r1, const AABB& r2, bool& out_collided);
 
     friend std::ostream& operator<<(std::ostream& os, const AABB& v);
 

@@ -13,6 +13,7 @@
 #include "logger/logger.h"
 
 #include <vector>
+#include <utility>
 #include <algorithm>
 
 namespace nan2 {
@@ -27,7 +28,7 @@ namespace nan2 {
   const int   Character::DASH_COOLDOWN_ = 1000;
 
   Character::Character(Player* player) :
-    Updatable(&(player->world())),
+    Updatable(&(player->world()), Entity::GROUP_CHARACTER, Entity::TYPE_CHARACTER),
     player_(player),
     weapon_(nullptr),
     last_input_acked_packet_(0),
@@ -36,7 +37,7 @@ namespace nan2 {
     dash_time_(0),
     dashing_(false) {
       update_order_ = 1;
-      SetWeapon(new MachineGun(this));
+      SetWeapon(new MachineGun(world_));
       hp_ = max_hp_ = 50;
   }
 
@@ -95,6 +96,7 @@ namespace nan2 {
         if (packet.time() <= 0) packets_.pop_front();
       }
     }
+    TryObtainItem();
 
     snapshot_.SetWeaponMagazine(weapon_->magazine());
     snapshot_.SetWeaponAmmo(weapon_->ammo());
@@ -128,11 +130,11 @@ namespace nan2 {
     const std::vector<AABB>& static_map_colliders = world_->world_map()->GetStaticAABBTileColliders();
     position_ = Vector2(x, y);
     for (AABB aabb : static_map_colliders) {
+      bool collided;
       AABB cur = collider();
-      Vector2 dv = AABB::SimpleAABB(cur, aabb);
+      Vector2 dv = AABB::SimpleAABB(cur, aabb, collided);
       position_ += dv;
     }
-    L_DEBUG << "Character " << player_->id() << " moved to " << position_;
   }
 
   void Character::Dash(unsigned char dir) {
@@ -158,6 +160,50 @@ namespace nan2 {
       dash_time_ = 0;
       dashing_ = false;
     }
+  }
+
+  bool Character::AddEntityToInventory(Entity* entity) {
+    std::pair<std::map<int, Entity*>::iterator, bool> ret =
+      inventory_.insert(std::pair<int, Entity*>(entity->id(), entity));
+    return ret.second;
+  }
+
+  Entity* Character::GetEntityFromInventory(int id) {
+    return inventory_[id];
+  }
+
+  Entity* Character::TryObtainItem() {
+    float rf = INFINITY;
+    AABB cur = collider();
+    Obtainable* rObtainable = nullptr;
+    world_->IterateEntityGroup(Entity::GROUP_OBTAINABLE, [&](Entity* entity)->bool {
+      bool collided;
+      Obtainable* obtainable = (Obtainable*)entity;
+      const AABB& collider = obtainable->collider();
+      Vector2 dv = AABB::SimpleAABB(cur, collider, collided);
+      float cf = dv.GetMagnitude();
+      if (!collided) return true;
+      if (cf < rf) {
+        rObtainable = obtainable;
+        rf = cf;
+      }
+      return true;
+    });
+    if (rObtainable != nullptr) {
+      L_DEBUG << "Player " << player_->id() << " obtained " << rObtainable->id();
+      AddEntityToInventory(rObtainable);
+      Entity* content = rObtainable->content();
+      if (content->group() == Entity::GROUP_WEAPON) {
+        Updatable* updatable = (Updatable*)content;
+        world_->AddUpdatable(updatable);
+      }
+      // Netcode
+      net_entities_obtained_.push(rObtainable);
+      world_->AddEntityDestroiedPacket(rObtainable);
+
+      rObtainable->Destroy();
+    }
+    return nullptr;
   }
 
   void Character::AddInput(PlayerInputPacket& plp) {
@@ -194,6 +240,7 @@ namespace nan2 {
     world_->DestroyUpdatable(weapon_);
     if (weapon_ != nullptr) delete weapon_;
     weapon_ = weapon;
+    weapon->SetCharacter(this);
     world_->AddUpdatable(weapon);
   }
 

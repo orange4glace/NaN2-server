@@ -95,9 +95,9 @@ namespace nan2 {
         }
       }
       else if (rCollider == rBreakable) {
-        L_DEBUG << "#### Collision detected Breakable";
-        world_->CreateRandomDroppedItemAt(rBreakable->position());
-        world_->DestroyEntity(rBreakable);
+        L_DEBUG << "#### Collision detected Breakable " << (int)rBreakable->id() << " " << (int)rBreakable->group();
+        world_->CreateObtainableAt(rBreakable->position());
+        rBreakable->Destroy();
         Destroy();
       }
       else if (rCollider == rTile) {

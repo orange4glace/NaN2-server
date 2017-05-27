@@ -15,6 +15,7 @@
 #include <algorithm>
 
 #include "entity/breakable.h"
+#include "entity/machine_gun.h"
 
 namespace nan2 {
 
@@ -32,6 +33,7 @@ namespace nan2 {
 
     Breakable* b = new Breakable(this, Vector2(50, 50));
     CreateEntity(b);
+    AddEntityCreatedPacket(b);
   }
 
   World::World(WorldMap* world_map) : 
@@ -135,6 +137,7 @@ namespace nan2 {
       updatable_set_.insert(item);
       // Start updating
       item->set_is_on_stage(true);
+      item->active(true);
       item->OnCreate();
       L_DEBUG << "updatable staged.";
     }
@@ -149,7 +152,7 @@ namespace nan2 {
     if (id == 0) return false;
     obj->id(id);
     updatable_ready_stage_.insert(obj);
-    L_DEBUG << "updatable added.";
+    L_DEBUG << "updatable added. " << (int)obj->id() << " " << (int)obj->type();
     return true;
   }
 
@@ -184,41 +187,53 @@ namespace nan2 {
     
   }
 
+  bool World::CreateObtainableAt(const Vector2& position) {
+    MachineGun* machine_gun = new MachineGun(this);
+    if (!CreateEntity(machine_gun)) {
+      delete machine_gun;
+      return false;
+    }
+    Obtainable* item = new Obtainable(this, machine_gun, position);
+    if (!CreateEntity(item)) {
+      delete item;
+      return false;
+    }
+    AddEntityCreatedPacket(item);
+    return true;
+  }
+
   bool World::CreateEntity(Entity* entity) {
     entity_id id = AcquireEntityId();
     if (id == 0) return false;
+    entity->id(id);
+    entity->active(true);
     entities_[entity->group()].insert(entity);
-    world_guaranteed_packet_builder_.AddEntityCreated(entity);
 
     L_DEBUG << "Entity Created " << (int)entity->id() << " " << (int)entity->group() << " " << (int)entity->type();
+    return true;
   }
 
   void World::DestroyEntity(Entity* entity) {
     if (entity == nullptr) return;
     entities_[entity->group()].erase(entity);
     ReleaseEntityId(entity->id());
-    delete entity;
 
     L_DEBUG << "Entity Removed (id : " << (int)entity->id() << ", type = " << (int)entity->type() << ")";
+    delete entity;
   }
 
   void World::IterateEntityGroup(entity_group group, std::function<bool(Entity*)> func) {
     auto& entity_set = entities_[group];
     auto it = entity_set.begin();
     while (it != entity_set.end()) {
+      if (!(*it)->active()) {
+        it ++;
+        continue;
+      }
       bool r = func(*it);
       if (!r) break;
       it ++;
     }
-  }
-
-  bool World::CreateRandomDroppedItemAt(const Vector2& position) {
-    DroppedItem* item = new DroppedItem(this, position);
-    if (!CreateEntity(item)) {
-      delete item;
-      return false;
-    }
-    return true;
   }
 
 
@@ -236,6 +251,14 @@ namespace nan2 {
     OutPacket packet(world_guaranteed_packet_builder_.GetBufferVector(), OutPacket::BROADCAST);
     send_packet_queue_.push(packet);
     world_guaranteed_packet_builder_.Clear();
+  }
+
+  void World::AddEntityCreatedPacket(Entity* entity) {
+    world_guaranteed_packet_builder_.AddEntityCreated(entity);
+  }
+
+  void World::AddEntityDestroiedPacket(Entity* entity) {
+    world_guaranteed_packet_builder_.AddEntityDestroied(entity);
   }
 
   void World::OnPacketReceived(std::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id) {

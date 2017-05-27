@@ -3,13 +3,14 @@
 
 #include "entity/machine_gun_bullet.h"
 #include "world/world.h"
-#include "entity/character.h"
 #include "math_helper.h"
 
 namespace nan2 {
 
-  MachineGun::MachineGun(Character* character) :
-    Weapon(character, 1, 100, 1000, 30, 140, Vector2(29, 0))
+  MachineGun::MachineGun(World* world) :
+    Weapon(world, Entity::TYPE_MACHINE_GUN, 1,
+      100, 1000, 30, 140,
+      Vector2(29, 0))
     {
   }
 

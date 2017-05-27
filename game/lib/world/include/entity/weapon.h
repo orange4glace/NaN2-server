@@ -7,7 +7,7 @@
 
 namespace nan2 {
 
-  // Forward Declaration
+  // Forward declaation
   class Character;
 
   class Weapon : public Updatable {
@@ -16,6 +16,7 @@ namespace nan2 {
 
     // Weapon id
     short id_;
+
     Character* character_;
 
     int max_cooldown_;
@@ -38,15 +39,19 @@ namespace nan2 {
 
   public:
 
-    Weapon(Character* character, short id, int max_cooldown, int max_reload_time, int max_ammo, int max_magazine, const Vector2& bullet_point);
+    Weapon(World* world, entity_type type, short id,
+        int max_cooldown, int max_reload_time, int max_ammo, int max_magazine,
+        const Vector2& bullet_point);
 
     void Update();
+    void SetCharacter(Character* character);
     // Fire weapon
     virtual bool Fire(unsigned char dir) = 0;
     int ammo();
     int magazine();
     int cooldown();
     int reload_time();
+
 
 
   };

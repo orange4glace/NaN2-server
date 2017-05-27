@@ -13,6 +13,8 @@
 #include <nan2/math/vector2.h>
 
 #include <string>
+#include <map>
+#include <queue>
 #include <deque>
 
 namespace nan2 {
@@ -43,6 +45,7 @@ namespace nan2 {
     bool dashing_;
 
     Weapon* weapon_;
+    std::map<int, Entity*> inventory_;
 
     std::deque<CharacterTickData> history_;
     std::deque<PlayerInputPacket> packets_;
@@ -52,6 +55,11 @@ namespace nan2 {
     void UpdateDashState(int dt);
     void Dash(unsigned char dir);
 
+    bool AddEntityToInventory(Entity* entity);
+    Entity* GetEntityFromInventory(int id);
+
+    Entity* TryObtainItem();
+
     float k;
 
   public:
@@ -59,6 +67,8 @@ namespace nan2 {
     // tmp
     unsigned int last_input_acked_packet_;
     unsigned int last_input_remaining_time_;
+    std::queue<Entity*> net_entities_obtained_;
+    std::queue<Entity*> net_entities_destroied_;
 
     static const Vector2& COLLIDER_SIZE();
 
