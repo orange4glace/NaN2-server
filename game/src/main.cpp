@@ -44,15 +44,20 @@ void update_world(InterfaceGame* game)
 void packet_handler(mgne::Packet &p)
 {
   int session_id = p.GetSessionId();
+  std::cerr << "processing..!" << std::endl;
+  std::cerr << session_id << std::endl;
   InterfaceGame* game = games[session_id];
 
   std::shared_ptr<std::vector<char>> ptr = p.GetPacketData();
   std::function<void()> process_packet([&, ptr](){
     World& world = games[session_id]->GetWorld();
     unsigned int packet_size = p.GetPacketSize();
+    std::cerr << "processing..!" << std::endl;
     world.OnPacketReceived(ptr, packet_size, p.GetSessionId());
+    std::cerr << "processing.. complete" << std::endl;
   });
   world_queues[game->GetId() % WORLD_THREAD].Push(process_packet);
+  std::cerr << "processing..@@!" << std::endl;
 }
 
 int admit_handler(mgne::Packet &p)
@@ -63,8 +68,8 @@ int admit_handler(mgne::Packet &p)
   GameMode game_mode;
 
   std::string token(p.GetPacketData()->data(), p.GetPacketSize());
-  std::cout << p.GetSessionId() << std::endl;
-  std::cout << token << std::endl;
+  std::cerr << p.GetSessionId() << std::endl;
+  std::cerr << token << std::endl;
   
   redis_client.hget(token, "game_num", [&game_num](cpp_redis::reply& reply) {
     game_num = std::stoi(reply.as_string());
@@ -78,8 +83,8 @@ int admit_handler(mgne::Packet &p)
       game_mode = (GameMode)std::stoi(reply.as_string());
     });
     redis_client.sync_commit();
-    std::cout << "creating new game..!" << std::endl;
-    std::cout << "game num : " << game_num << ", game mode: " << game_mode <<
+    std::cerr << "creating new game..!" << std::endl;
+    std::cerr << "game num : " << game_num << ", game mode: " << game_mode <<
       std::endl;
     if (game_mode == GameMode::DEATH) {
       game_map[game_num].reset(new Game<GameMode::DEATH>(server, update_service,
@@ -89,10 +94,10 @@ int admit_handler(mgne::Packet &p)
     }
   }
   games[p.GetSessionId()] = game_map[game_num].get();
-  std::cout << games[p.GetSessionId()]->GetId() << std::endl;
+  std::cerr << games[p.GetSessionId()]->GetId() << std::endl;
   if (games[p.GetSessionId()]->EnterGame(p.GetSessionId()) == 0) {
-    std::cout << "All entered..! start updating.." << std::endl;
-    std::cout << games[p.GetSessionId()]->GetId() << std::endl;
+    std::cerr << "All entered..! start updating.." << std::endl;
+    std::cerr << games[p.GetSessionId()]->GetId() << std::endl;
     update_world(games[p.GetSessionId()]);
   }
   // TODO : need to reply
@@ -124,8 +129,6 @@ int main( )
       while(1) {
         std::function<void()> job;
         if (world_queues[i].Pop(job)) {
-          std::cout << "rqueue : " << world_queues[i].rqueue_->size() << std::endl;
-          std::cout << "wqueue : " << world_queues[i].wqueue_->size() << std::endl;
           job();
         }
       }
