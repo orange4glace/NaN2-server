@@ -1,8 +1,6 @@
 // aabb.cpp
 #include "../include/aabb.h"
 
-#include <math.h>
-
 #include <iostream>
 
 namespace nan2 {

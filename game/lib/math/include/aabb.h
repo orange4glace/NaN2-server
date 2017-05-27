@@ -4,6 +4,8 @@
 
 #include "rect.h"
 
+#include <math.h>
+
 namespace nan2 {
 
   class AABB {
