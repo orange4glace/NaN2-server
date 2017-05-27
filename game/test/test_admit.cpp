@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <thread>
 
 #include <mgne/protocol.hpp>
 #include <boost/asio.hpp>
@@ -29,8 +30,11 @@ int main(int argc, char *argv[])
 
   int len;
   char buffer[1024];
+  unsigned char packet_sample[] = { 0x04, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x08, 0x00, 0x0C, 0x00, 0x04, 0x00, 0x08, 0x00, 0x08, 0x00, 0x00, 0x00, 0x7C, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x10, 0x00, 0x04, 0x00, 0x0B, 0x00, 0x0A, 0x00, 0x09, 0x00, 0x0C, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x3F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x30, 0x11, 0x00, 0x00, 0x00};
 
-  std::string token(argv[0]);
+  std::cout << sizeof(packet_sample) << std::endl;
+
+  std::string token(argv[1]);
 
   ((UDP_PACKET_HEADER*)buffer)->packet_size = sizeof(UDP_PACKET_HEADER) + token.size();
   ((UDP_PACKET_HEADER*)buffer)->packet_id = PACKET_ADMIT_REQ;
@@ -40,9 +44,13 @@ int main(int argc, char *argv[])
   }
 
   write_(socket, buffer, sizeof(UDP_PACKET_HEADER) + token.size());
-
-  read_(socket, buffer, sizeof(UDP_PACKET_HEADER) + sizeof(short));
-  std::cout << *((short*)(buffer + sizeof(UDP_PACKET_HEADER))) << std::endl;
+  
+  ((UDP_PACKET_HEADER*)buffer)->packet_size = sizeof(UDP_PACKET_HEADER) + 72;
+  while(1)
+  {
+    read_(socket, buffer, sizeof(UDP_PACKET_HEADER) + sizeof(short));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
 
   return 0;
 }

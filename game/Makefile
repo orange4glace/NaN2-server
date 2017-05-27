@@ -16,9 +16,9 @@ TARGET_SRCS_NAKED = test.cpp
 SUB_DIRS_STRIPED = math world
 
 # nan2 internal libs
-NAN2_LIBS += Math World
+NAN2_LIBS += World Math
 
 # external libs
-EXT_LIBS += boost_log boost_system boost_thread cpp_redis tacopie
+EXT_LIBS += boost_log boost_system boost_thread cpp_redis tacopie pthread
 
 include $(PROJ_ROOT)/includePost.mk
