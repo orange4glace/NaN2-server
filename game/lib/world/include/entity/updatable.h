@@ -23,7 +23,7 @@ namespace nan2 {
 
   public:
 
-    Updatable(World* world);
+    Updatable(World* world, entity_group gruop, entity_type type);
 
     virtual void Destroy();
     virtual void Update() {};

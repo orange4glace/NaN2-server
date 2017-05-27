@@ -6,7 +6,7 @@
 namespace nan2 {
 
   Bullet::Bullet(World* world, int player_id, int collision_mask) :
-    Updatable(world),
+    Updatable(world, Entity::GROUP_BULLET, Entity::TYPE_BULLET),
     player_id_(player_id),
     collision_mask_(collision_mask) {
       update_order_ = 2;

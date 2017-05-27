@@ -17,7 +17,7 @@ namespace nan2 {
     y_(y) {
   }
 
-  float Vector2::getMagnitude() {
+  float Vector2::GetMagnitude() {
     return sqrt(x_ * x_ + y_ * y_);
   }
 

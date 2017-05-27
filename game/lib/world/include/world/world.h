@@ -6,7 +6,7 @@
 #include "world_map.h"
 #include "../entity/player.h"
 #include "../entity/character.h"
-#include "../entity/dropped_item.h"
+#include "../entity/obtainable.h"
 
 #include "../network/world_guaranteed_packet_builder.h"
 #include "../network/out_packet.h"
@@ -121,13 +121,16 @@ namespace nan2 {
 
     void IterateEntityGroup(entity_group group, std::function<bool(Entity*)> func);
 
-    bool CreateRandomDroppedItemAt(const Vector2& position);
+    bool CreateObtainableAt(const Vector2& position);
 
     void OnPacketReceived(std::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id);
     void ParsePlayerInputPacket(int8_t* buffer, unsigned int size, uint64_t client_id);
-    void ParsePongPacket(int8_t* buffer, unsigned int size);
 
+    void ParsePongPacket(int8_t* buffer, unsigned int size);
     void SendPingPacket();
+
+    void AddEntityCreatedPacket(Entity* entity);
+    void AddEntityDestroiedPacket(Entity* entity);
 
     unsigned int SendPacketQueueSize() const;
     const OutPacket PopSendPacket();

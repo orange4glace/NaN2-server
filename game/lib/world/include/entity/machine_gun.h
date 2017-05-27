@@ -12,7 +12,7 @@ namespace nan2 {
 
   public:
 
-    MachineGun(Character* character);
+    MachineGun(World* world);
 
     void Update();
     bool Fire(unsigned char dir);

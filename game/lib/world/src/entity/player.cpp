@@ -6,7 +6,7 @@
 namespace nan2 {
   
   Player::Player(World* world, int id) :
-    Updatable(world),
+    Updatable(world, Entity::GROUP_PLAYER, Entity::TYPE_PLAYER),
     character_(this),
     id_(id) {
     ping_ = 0;

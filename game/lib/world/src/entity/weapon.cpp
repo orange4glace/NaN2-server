@@ -6,9 +6,11 @@
 
 namespace nan2 {
 
-  Weapon::Weapon(Character* character, short id, int max_cooldown, int max_reload_time, int max_ammo, int max_magazine, const Vector2& bullet_point) :
-    Updatable(&(character->world())),
-    character_(character),
+  Weapon::Weapon(World* world, entity_type type, short id,
+    int max_cooldown, int max_reload_time, int max_ammo, int max_magazine,
+    const Vector2& bullet_point) :
+    Updatable(world, Entity::GROUP_WEAPON, type),
+    character_(nullptr),
     id_(id),
     max_cooldown_(max_cooldown),
     max_reload_time_(max_reload_time),
@@ -24,9 +26,11 @@ namespace nan2 {
   }
 
   bool Weapon::CanFire() {
-    return cooldown_ <= 0 &&
-          reload_time_ <= 0 &&
-          ammo_ > 0;
+    return
+      character_ != nullptr && 
+      cooldown_ <= 0 &&
+      reload_time_ <= 0 &&
+      ammo_ > 0;
   }
 
   void Weapon::AfterFired() {
@@ -44,6 +48,10 @@ namespace nan2 {
   void Weapon::Update() {
     DecreaseByDT(cooldown_);
     DecreaseByDT(reload_time_);
+  }
+
+  void Weapon::SetCharacter(Character* character) {
+    character_= character;
   }
 
   Vector2 Weapon::GetBulletPoint(unsigned char dir, const Vector2& position) const {

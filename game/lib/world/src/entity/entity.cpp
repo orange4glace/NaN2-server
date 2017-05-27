@@ -11,14 +11,25 @@ namespace nan2 {
 
   Entity::Entity(World* world, entity_group group, entity_type type) :
     world_(world),
+    active_(false),
     group_(group),
     type_(type) {
       assert(world != nullptr);
       internal_id_ = Updatable::next_internal_id_++;
   }
 
+  void Entity::Destroy() {
+    L_DEBUG << "Entity destroy called " << (int)id_ << " " << (int)type_;
+    active_ = false;
+    world_->DestroyEntity(this);
+  }
+
   int Entity::internal_id() const {
     return internal_id_;
+  }
+
+  bool Entity::active() const {
+    return active_;
   }
 
   entity_id Entity::id() const {
@@ -45,6 +56,10 @@ namespace nan2 {
     return layer_;
   }
 
+  void Entity::active(bool active) {
+    active_ = active;
+  }
+
   void Entity::id(entity_id id) {
     id_ = id;
   }
@@ -57,7 +72,6 @@ namespace nan2 {
     position_.set_x(x);
     position_.set_y(y);
   }
-
 
   void Entity::layer(int value) {
     layer_ = value;

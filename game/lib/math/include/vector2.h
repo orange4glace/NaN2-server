@@ -15,7 +15,7 @@ namespace nan2 {
 
     Vector2();
     Vector2(float x, float y);
-    float getMagnitude();
+    float GetMagnitude();
 
     Vector2 operator+(const Vector2& v) const;
     Vector2 operator-(const Vector2& v) const;

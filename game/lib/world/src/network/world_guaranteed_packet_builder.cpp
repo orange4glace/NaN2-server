@@ -3,9 +3,6 @@
 
 #include "logger/logger.h"
 
-#include "flatbuffers/world_guaranteed_generated.h"
-#include "flatbuffers/entity_created_generated.h"
-
 namespace nan2 {
 
   WorldGuaranteedPacketBuilder::WorldGuaranteedPacketBuilder() :
