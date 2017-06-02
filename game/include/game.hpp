@@ -53,18 +53,22 @@ public:
 
   void SendToAll(const std::vector<char>& message)
   {
+    std::cerr << "send to all\n";
     mgne::Packet tmp(message.size(), 0, message.data(),
       mgne::Packet::PacketType::PACKET_UDP);
     for (int client : clients_) {
       server_->GetSessionManager().Send(client, tmp);
     }
+    std::cerr << "send to all complete\n";
   }
 
   void SendToClient(const std::vector<char>& message, int client)
   {
+    std::cerr << "send to client\n";
     mgne::Packet tmp(message.size(), 0, message.data(),
       mgne::Packet::PacketType::PACKET_UDP);
     server_->GetSessionManager().Send(client, tmp);
+    std::cerr << "send to client complete\n";
   }
 
   World& GetWorld() { return world_; }

@@ -1,7 +1,7 @@
 #include "header.hpp"
 
-#define MAX_SESSION_CAPACITY 500
-#define    MAX_GAME_CAPACITY 500 
+#define MAX_SESSION_CAPACITY 512
+#define    MAX_GAME_CAPACITY 512
 #define WORLD_THREAD         3
 
 using namespace nan2;
@@ -25,8 +25,10 @@ void update_and_send(InterfaceGame* game)
   while (world.SendPacketQueueSize()) {
     OutPacket out_packet = world.PopSendPacket();
     if (out_packet.type() == OutPacket::BROADCAST) {
+      std::cerr << "sending to all" << std::endl;
       game->SendToAll(out_packet.data());
     } else {
+      std::cerr << "sending.." << std::endl;
       game->SendToClient(out_packet.data(), out_packet.receiver());
     }
   }
@@ -44,20 +46,16 @@ void update_world(InterfaceGame* game)
 void packet_handler(mgne::Packet &p)
 {
   int session_id = p.GetSessionId();
-  std::cerr << "processing..!" << std::endl;
   std::cerr << session_id << std::endl;
   InterfaceGame* game = games[session_id];
 
   std::shared_ptr<std::vector<char>> ptr = p.GetPacketData();
-  std::function<void()> process_packet([&, ptr](){
+  std::function<void()> process_packet([&, ptr, session_id](){
     World& world = games[session_id]->GetWorld();
-    unsigned int packet_size = p.GetPacketSize();
-    std::cerr << "processing..!" << std::endl;
-    world.OnPacketReceived(ptr, packet_size, p.GetSessionId());
-    std::cerr << "processing.. complete" << std::endl;
+    unsigned int size = ptr->size();
+    world.OnPacketReceived(ptr, size, session_id);
   });
   world_queues[game->GetId() % WORLD_THREAD].Push(process_packet);
-  std::cerr << "processing..@@!" << std::endl;
 }
 
 int admit_handler(mgne::Packet &p)
