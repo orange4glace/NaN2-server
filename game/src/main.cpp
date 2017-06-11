@@ -21,14 +21,15 @@ GameMap game_map;
 void update_and_send(InterfaceGame* game)
 {
   World& world = game->GetWorld();
+  std::cout << "------------------- Start world update -----------------" << std::endl;
   world.Update();
+  std::cout << "------------------- End of world update ----------------" << std::endl;
   while (world.SendPacketQueueSize()) {
     OutPacket out_packet = world.PopSendPacket();
     if (out_packet.type() == OutPacket::BROADCAST) {
       std::cerr << "sending to all" << std::endl;
       game->SendToAll(out_packet.data());
     } else {
-      std::cerr << "sending.." << std::endl;
       game->SendToClient(out_packet.data(), out_packet.receiver());
     }
   }
