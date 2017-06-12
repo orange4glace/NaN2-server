@@ -57,7 +57,7 @@ public:
     mgne::Packet tmp(message.size(), 0, message.data(),
       mgne::Packet::PacketType::PACKET_UDP);
     for (int client : clients_) {
-      server_->GetSessionManager().Send(client, tmp);
+      //server_->GetSessionManager().Send(client, tmp);
     }
     std::cerr << "send to all complete\n";
   }
