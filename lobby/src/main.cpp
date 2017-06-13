@@ -147,12 +147,15 @@ int find_session_id(std::string& user_tag)
 void packet_handler(mgne::Packet& p)
 {
   int session_id = p.GetSessionId();
+  std::cout << "packet from session : " << session_id << std::endl;
+
   char* buffer_pointer = p.GetPacketData()->data();
   flatbuffers::FlatBufferBuilder builder(1024);
 
   switch(p.GetPacketId())
   {
   case PACKET_JOIN_REQ: {
+    std::cout << "PACKET_JOIN_REQ\n";
     short state = -1;
     auto join_req = GetJoinReq(buffer_pointer);
     std::string token = join_req->token()->str();
@@ -160,6 +163,7 @@ void packet_handler(mgne::Packet& p)
 
     if (tmp != nullptr) {
       user_list.Lock();
+      std::cout << "Enter ready..! " << tmp->GetUserTag() << std::endl;
       if (user_list.Find(tmp->GetUserId()) == false) {
         state = 1;
         std::cout << "Entered: " << tmp->GetUserTag() << std::endl;
@@ -171,6 +175,8 @@ void packet_handler(mgne::Packet& p)
         requests[session_id].Clear();
       }
       user_list.Unlock();
+    } else {
+      std::cout << "Enter failed..! " << token << std::endl;
     }
     
     switch (state) {
@@ -190,8 +196,10 @@ void packet_handler(mgne::Packet& p)
     break;
   }
   case PACKET_GROUP_REQ: {
+    std::cout << "PACKET_GROUP_REQ\n";
     model::User* user = users[session_id].get();
     if (user == nullptr) {
+      std::cout << "user null ptr\n";
       break; 
     }
 
@@ -361,6 +369,7 @@ void packet_handler(mgne::Packet& p)
     break;
   }
   case PACKET_MATCH_REQ: {
+    std::cout << "PACKET_MATCH_REQ\n";
     short state = -1;
     auto match_req = GetMatchReq(buffer_pointer);
     GameMode mode = (GameMode)match_req->mode();

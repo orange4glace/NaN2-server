@@ -27,7 +27,7 @@ int read_(boost::asio::ip::tcp::socket& socket, char* buffer, int len)
   return boost::asio::read(socket, boost::asio::buffer(buffer, len));
 }
 
-int main()
+int main(int argc, const char *argv[])
 {
   boost::asio::io_service io_service;
   boost::asio::ip::tcp::endpoint endpoint(
@@ -45,7 +45,7 @@ int main()
   flatbuffers::FlatBufferBuilder builder(1024);
 
   /* 1. join */
-  std::string token_str = "wv9TDmj8bO@n%7Aff^s9";
+  std::string token_str(argv[1]);
   auto token = builder.CreateString(token_str);
   auto join_req = CreateJoinReq(builder, token);
   builder.Finish(join_req);
@@ -63,6 +63,7 @@ int main()
   std::cout << "Received  : " << len << std::endl;
   std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
     << std::endl;
+  std::cout << ((TCP_PACKET_HEADER*)buffer)->packet_size << std::endl;
   len = read_(socket, buffer,
     ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
 

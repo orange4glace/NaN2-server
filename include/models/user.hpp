@@ -36,16 +36,17 @@ public:
   {
     std::vector<std::string> tmp(1);
     tmp[0] = token;
-    int *check = new int(1);
-    redis_client.exists(tmp, [&, check](cpp_redis::reply &reply) mutable {
-      if (reply.as_integer() == 0) *check = 0; 
+    int check;
+    redis_client.exists(tmp, [&](cpp_redis::reply &reply) mutable {
+      if (reply.as_integer() == 0) check = 0; 
+      else check = 1;
     });
     redis_client.sync_commit();
-    if (*check == 0) return nullptr;
+    if (check == 0) return nullptr;
 
     User* ptr = new User();
     redis_client.hget(token, "user_id",
-      [&, ptr](cpp_redis::reply& reply) mutable {
+      [ptr](cpp_redis::reply& reply) mutable {
       int idx = 1;
       const std::string& user_id = reply.as_string();
       for (int i = user_id.size() - 1; i >= 0; i--) {
