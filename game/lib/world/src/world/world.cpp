@@ -306,6 +306,7 @@ namespace nan2 {
     int player_id;
     int seq = parser.Parse(player_id);
     Player* player = GetPlayer(player_id);
+    L_DEBUG << "Parse Pong packet " << player_id;
     if (player == nullptr) return;
     player->OnPongPacketReceived(seq);
   }

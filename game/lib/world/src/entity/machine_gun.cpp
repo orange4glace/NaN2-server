@@ -9,7 +9,7 @@ namespace nan2 {
 
   MachineGun::MachineGun(World* world) :
     Weapon(world, Entity::TYPE_MACHINE_GUN, 1,
-      100, 1000, 30, 140,
+      80, 1000, 30, 140,
       Vector2(29, 0))
     {
   }

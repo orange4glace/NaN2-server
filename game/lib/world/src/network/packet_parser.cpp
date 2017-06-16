@@ -4,6 +4,7 @@
 #include "logger/logger.h"
 
 #include <cstring>
+#include <string>
 #include <iostream>
 
 namespace nan2 {
@@ -29,24 +30,24 @@ namespace nan2 {
     return 0;
   }
 
-  uint32_t PacketParser::ReadInt() {
+  int32_t PacketParser::ReadInt() {
     Take(4);
-    uint32_t result = 0;
-    result = (data_[offset_ - 1] << 24) | (data_[offset_ - 2] << 16) | (data_[offset_ - 3] << 8) | (data_[offset_ - 4]);
+    int32_t result = 0;
+    result = ((uint8_t)data_[offset_ - 1] << 24) | ((uint8_t)data_[offset_ - 2] << 16) | ((uint8_t)data_[offset_ - 3] << 8) | ((uint8_t)data_[offset_ - 4]);
     return result;
   }
 
-  uint16_t PacketParser::ReadShort() {
+  int16_t PacketParser::ReadShort() {
     Take(2);
-    uint16_t result = 0;
-    result = (data_[offset_ - 1] << 8) | (data_[offset_ - 2]);
+    int16_t result = 0;
+    result = ((uint8_t)data_[offset_ - 1] << 8) | ((uint8_t)data_[offset_ - 2]);
     return result;
   }
 
-  uint8_t PacketParser::ReadByte() {
+  int8_t PacketParser::ReadByte() {
     Take(1);
-    uint8_t result = 0;
-    result = (data_[offset_ - 1]);
+    int8_t result = 0;
+    result = ((uint8_t)data_[offset_ - 1]);
     return result;
   }
 
@@ -62,4 +63,9 @@ namespace nan2 {
     offset_ += size;
   }
 
+  void PacketParser::PrintRaw() {
+    for (int i = 0; i < size_; i ++)
+      std::cout << (int)((unsigned char)data_[i]) << " ";
+    std::cout << "\n";
+  }
 }
