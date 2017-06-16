@@ -25,6 +25,7 @@ public:
     : leader_(leader)
     , curr_mode_(GameMode::DEFAULT)
   {
+    rating_death_ = 0;
   }
 
   Group(Group& g1, Group& g2)

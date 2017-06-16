@@ -13,7 +13,6 @@
 
 #include <cassert>
 #include <algorithm>
-#include <iostream>
 
 #include "entity/breakable.h"
 #include "entity/machine_gun.h"
@@ -251,7 +250,7 @@ namespace nan2 {
     send_packet_queue_.push(packet);
     world_guaranteed_packet_builder_.Clear();
   }
-  
+
   void World::AddEntityCreatedPacket(Entity* entity) {
     world_guaranteed_packet_builder_.AddEntityCreated(entity);
   }
@@ -315,7 +314,7 @@ namespace nan2 {
       PingPacketBuilder builder;
       auto player_ = player_item.second;
       builder.Build(seq, player_->ping());
-      
+
       OutPacket packet(builder.GetBufferVector(), OutPacket::UNICAST, cpmap_[player_->id()]);
       player_->PushPingPacket(seq, Time::current_time());
       send_packet_queue_.push(packet);

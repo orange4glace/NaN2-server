@@ -104,5 +104,19 @@ int main(int argc, const char *argv[])
   len = read_(socket, buffer,
     ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
 
+  /* 5. receive match joined ntf */
+
+  while(1) {
+    len = read_(socket, buffer, sizeof(TCP_PACKET_HEADER));
+
+    std::cout << "Received  : " << len << std::endl;
+    std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
+      << std::endl;
+
+    len = read_(socket, buffer,
+      ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
+    }
+
+
   return 0;
 }
