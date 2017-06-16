@@ -50,8 +50,6 @@ namespace nan2 {
   }
 
   void World::Update() {
-    TakeSnapshot();
-  
     std::chrono::high_resolution_clock::time_point cur_system_time(std::chrono::high_resolution_clock::now());
     std::chrono::duration<double, std::milli> time_span = cur_system_time - last_system_time_;
     last_system_time_ = cur_system_time;

@@ -1,6 +1,8 @@
 // character_snapshot.cpp
 #include "network/character_snapshot.h"
 
+#include "logger/logger.h"
+
 namespace nan2 {
 
   CharacterSnapshot::CharacterSnapshot() {}

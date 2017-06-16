@@ -16,7 +16,6 @@ namespace nan2 {
 
     out_player_id = ReadInt();
     int seq = ReadInt();
-    PrintRaw();
     return seq;
   }
 

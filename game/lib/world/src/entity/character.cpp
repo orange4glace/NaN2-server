@@ -65,7 +65,6 @@ namespace nan2 {
     snapshot_.Update(dt);
     int given_time = dt;
     while (!packets_.empty()) {
-      L_DEBUG << "Consumin gpacket ";
       PlayerInputPacket& packet = packets_.front();
       bool is_fresh = !packet.is_consuming();
       int consuming_time = packet.Consume(given_time);
