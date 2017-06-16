@@ -13,7 +13,6 @@
 
 #include <cassert>
 #include <algorithm>
-#include <iostream>
 
 #include "entity/breakable.h"
 #include "entity/machine_gun.h"
@@ -50,10 +49,6 @@ namespace nan2 {
   }
 
   void World::Update() {
-    // DEEEEEEEEEEEEEEEEEEEEEEBUG
-    TakeSnapshot();
-  
-    /*
     std::chrono::high_resolution_clock::time_point cur_system_time(std::chrono::high_resolution_clock::now());
     std::chrono::duration<double, std::milli> time_span = cur_system_time - last_system_time_;
     last_system_time_ = cur_system_time;
@@ -105,7 +100,7 @@ namespace nan2 {
       ping_send_timer_ = 0;
       SendPingPacket();
     }
-  */
+
   }
 
   void World::FixedUpdate() {
@@ -243,29 +238,26 @@ namespace nan2 {
 
 
   // Netcode
-  static int k = 0;
+
   void World::TakeSnapshot() {
-    k ++;
-    if (k < 100) return;
-    L_DEBUG << "############# Send Packet";
-    /*
+    
     WorldSnapshotPacketBuilder packet_builder;
     packet_builder.Build(*this);
     OutPacket packet(packet_builder.GetBufferVector(), OutPacket::BROADCAST);
-    */
 
-    // Ammo = 30
-    std::vector<signed char> vec;
-    vec.push_back(3); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(124); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(12); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(6); vec.push_back(0); vec.push_back(8); vec.push_back(0); vec.push_back(4); vec.push_back(0); vec.push_back(6); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(4); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(1); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(16); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(12); vec.push_back(0); vec.push_back(18); vec.push_back(0); vec.push_back(17); vec.push_back(0); vec.push_back(12); vec.push_back(0); vec.push_back(8); vec.push_back(0); vec.push_back(4); vec.push_back(0); vec.push_back(12); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(40); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(6); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(2); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(-16); vec.push_back(26); vec.push_back(0); vec.push_back(32); vec.push_back(0); vec.push_back(24); vec.push_back(0); vec.push_back(20); vec.push_back(0); vec.push_back(16); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(12); vec.push_back(0); vec.push_back(8); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(4); vec.push_back(0); vec.push_back(26); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(28); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(30); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(110); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(20); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(50); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0);
-
-    // Ammo = 0    
-    /*
-    std::vector<signed char> vec;
-    vec.push_back(3); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(116); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(12); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(6); vec.push_back(0); vec.push_back(8); vec.push_back(0); vec.push_back(4); vec.push_back(0); vec.push_back(6); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(4); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(1); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(16); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(12); vec.push_back(0); vec.push_back(14); vec.push_back(0); vec.push_back(13); vec.push_back(0); vec.push_back(8); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(4); vec.push_back(0); vec.push_back(12); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(36); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(2); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(-16); vec.push_back(26); vec.push_back(0); vec.push_back(28); vec.push_back(0); vec.push_back(20); vec.push_back(0); vec.push_back(16); vec.push_back(0); vec.push_back(12); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(8); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(4); vec.push_back(0); vec.push_back(26); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(24); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(110); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(20); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(50); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); vec.push_back(0); 
-    */
-
-    OutPacket packet(vec, OutPacket::BROADCAST);
+    L_DEBUG << "Sent " << packet_builder.GetBufferVector().size();
     send_packet_queue_.push(packet);
+    /*
+    for (auto player_item : players_) {
+      auto player_ = player_item.second;
+      WorldSnapshotPacketBuilder packet_builder;
+      packet_builder.Build(*this);
+      OutPacket packet(packet_builder.GetBufferVector(), OutPacket::UNICAST, cpmap_[player_->id()]);
+ 
+      L_DEBUG << "Sent " << packet_builder.GetBufferVector().size();
+      send_packet_queue_.push(packet);
+    }
+    */
   }
 
   void World::SendGuaranteedPacket() {
@@ -274,7 +266,7 @@ namespace nan2 {
     send_packet_queue_.push(packet);
     world_guaranteed_packet_builder_.Clear();
   }
-  
+
   void World::AddEntityCreatedPacket(Entity* entity) {
     world_guaranteed_packet_builder_.AddEntityCreated(entity);
   }
@@ -284,13 +276,12 @@ namespace nan2 {
   }
 
   void World::OnPacketReceived(std::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id) {
-    /*
     std::vector<char>& buffer_vector = *buffer;
     int8_t* buffer_array = new int8_t[size];
     std::copy(buffer_vector.begin(), buffer_vector.end(), buffer_array);
 
     packet_type type = PacketParser::GetPacketType(buffer_array);
-    L_DEBUG << "Packet type " << type;
+    L_DEBUG << "Type = " << type;
 
     try {
       switch (type) {
@@ -311,7 +302,6 @@ namespace nan2 {
       L_DEBUG << exp;
     }
     delete buffer_array;
-    */
   }
 
   void World::ParsePlayerInputPacket(int8_t* buffer, unsigned int size, uint64_t client_id) {
@@ -341,7 +331,7 @@ namespace nan2 {
       PingPacketBuilder builder;
       auto player_ = player_item.second;
       builder.Build(seq, player_->ping());
-      
+
       OutPacket packet(builder.GetBufferVector(), OutPacket::UNICAST, cpmap_[player_->id()]);
       player_->PushPingPacket(seq, Time::current_time());
       send_packet_queue_.push(packet);

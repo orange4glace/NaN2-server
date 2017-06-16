@@ -9,6 +9,9 @@
 #include "../include/group_req_generated.h"
 #include "../include/group_ntf_generated.h"
 #include "../include/group_ans_generated.h"
+#include "../include/match_req_generated.h"
+#include "../include/match_ntf_generated.h"
+#include "../include/match_ans_generated.h"
 
 #include "../include/protocol.hpp"
 
@@ -79,7 +82,6 @@ int main(int argc, const char *argv[])
   std::cout << "NTF : " << group_ntf->ntf() << std::endl;
   ntf_id = group_ntf->ntf_id();
   
-
   /* 4. send join_ac req */
   builder.Clear();
   auto placeholder = builder.CreateString("");
@@ -91,6 +93,43 @@ int main(int argc, const char *argv[])
 
   write_(socket, (char*)&header, sizeof(TCP_PACKET_HEADER));
   write_(socket, (char*)builder.GetBufferPointer(), builder.GetSize());
+
+  /* receive group ans */
+  len = read_(socket, buffer, sizeof(TCP_PACKET_HEADER));
+  std::cout << "Received  : " << len << std::endl;
+  std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
+    << std::endl;
+  std::cout << ((TCP_PACKET_HEADER*)buffer)->packet_size << std::endl;
+  len = read_(socket, buffer,
+    ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
+
+  std::cout << "Group ANS arrived." << std::endl;
+
+  /* 5. send match_req */
+  builder.Clear();
+  auto match_req = CreateMatchReq(builder, M_REQ_JOIN, M_MODE_DEATH);
+  builder.Finish(match_req);
+
+  header.packet_size = sizeof(TCP_PACKET_HEADER) + builder.GetSize();
+  header.packet_id = PACKET_MATCH_REQ;
+
+  write_(socket, (char*)&header, sizeof(TCP_PACKET_HEADER));
+  write_(socket, (char*)builder.GetBufferPointer(), builder.GetSize());
+
+  std::cout << "Match REQ sent" << std::endl;
+
+  while(1) {
+  len = read_(socket, buffer, sizeof(TCP_PACKET_HEADER));
+  std::cout << "Received  : " << len << std::endl;
+  std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
+    << std::endl;
+  std::cout << ((TCP_PACKET_HEADER*)buffer)->packet_size << std::endl;
+  len = read_(socket, buffer,
+    ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
+
+  }
+
+
 
   return 0;
 }
