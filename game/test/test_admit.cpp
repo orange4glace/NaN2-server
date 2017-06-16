@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
   while(1)
   {
     read_(socket, buffer, sizeof(UDP_PACKET_HEADER) + sizeof(short));
-    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
   return 0;
