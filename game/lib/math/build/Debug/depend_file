@@ -1,5 +1,0 @@
-build/Debug/src/aabb.o: src/aabb.cpp src/../include/aabb.h \
- src/../include/rect.h src/../include/vector2.h
-build/Debug/src/vector2.o: src/vector2.cpp include/vector2.h
-build/Debug/src/rect.o: src/rect.cpp include/rect.h include/vector2.h
-build/Debug/test/test.o: test/test.cpp ../../include/nan2/math/vector2.h
