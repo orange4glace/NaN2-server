@@ -59,7 +59,14 @@ void NetworkServer::handle_receive(const boost::system::error_code& error, std::
 
 void NetworkServer::send(const std::vector<char>& buffer, udp::endpoint target_endpoint)
 {
-    socket.send_to(boost::asio::buffer(buffer), target_endpoint);
+    short packet_size = buffer.size() + 4;
+    std::vector<char> buf;
+    buf.push_back(packet_size & 0xff);
+    buf.push_back((packet_size >> 8) & 0xff);
+    buf.push_back(0);
+    buf.push_back(0);
+    for (int i = 0; i < buffer.size(); i ++) buf.push_back(buffer[i]);
+    socket.send_to(boost::asio::buffer(buf), target_endpoint);
     sentBytes += buffer.size();
     sentMessages++;
 }

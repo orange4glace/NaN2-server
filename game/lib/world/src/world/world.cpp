@@ -100,7 +100,6 @@ namespace nan2 {
       ping_send_timer_ = 0;
       SendPingPacket();
     }
-
   }
 
   void World::FixedUpdate() {
@@ -238,26 +237,11 @@ namespace nan2 {
 
 
   // Netcode
-
   void World::TakeSnapshot() {
-    
     WorldSnapshotPacketBuilder packet_builder;
     packet_builder.Build(*this);
     OutPacket packet(packet_builder.GetBufferVector(), OutPacket::BROADCAST);
-
-    L_DEBUG << "Sent " << packet_builder.GetBufferVector().size();
     send_packet_queue_.push(packet);
-    /*
-    for (auto player_item : players_) {
-      auto player_ = player_item.second;
-      WorldSnapshotPacketBuilder packet_builder;
-      packet_builder.Build(*this);
-      OutPacket packet(packet_builder.GetBufferVector(), OutPacket::UNICAST, cpmap_[player_->id()]);
- 
-      L_DEBUG << "Sent " << packet_builder.GetBufferVector().size();
-      send_packet_queue_.push(packet);
-    }
-    */
   }
 
   void World::SendGuaranteedPacket() {
@@ -281,7 +265,6 @@ namespace nan2 {
     std::copy(buffer_vector.begin(), buffer_vector.end(), buffer_array);
 
     packet_type type = PacketParser::GetPacketType(buffer_array);
-    L_DEBUG << "Type = " << type;
 
     try {
       switch (type) {

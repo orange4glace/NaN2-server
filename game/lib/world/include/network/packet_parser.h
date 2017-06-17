@@ -25,9 +25,9 @@ namespace nan2 {
 
     PacketParser(int8_t* data, unsigned int size);
 
-    uint32_t ReadInt();
-    uint16_t ReadShort();
-    uint8_t  ReadByte();
+    int32_t ReadInt();
+    int16_t ReadShort();
+    int8_t  ReadByte();
     int8_t* ReadBytes(unsigned int size);
 
     void Take(unsigned int size);
@@ -46,6 +46,7 @@ namespace nan2 {
 
     static packet_type GetPacketType(int8_t* data);
     void Clear();
+    void PrintRaw();
 
   };
 
