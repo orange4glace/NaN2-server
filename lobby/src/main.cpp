@@ -390,7 +390,6 @@ void packet_handler(mgne::Packet& p)
 
       if (state == 1 && game_matching_queue.Push(groups[session_id],
         mode) == true) {
-        std::cout << groups[session_id]->GetLeader();
         std::cout << "Match req join\n";
         auto match_ans = CreateMatchAns(builder, M_ANS_SUCC); 
         auto match_ntf = CreateMatchNtf(builder_ntf, M_NTF_JOIN);

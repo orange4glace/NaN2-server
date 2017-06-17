@@ -71,7 +71,7 @@ int main(int argc, const char *argv[])
   /* 3. send group join_rq */
   builder.Clear();  
   
-  auto user_tag = builder.CreateString("test#1234");
+  auto user_tag = builder.CreateString(argv[2]);
   auto group_req = CreateGroupReq(builder, G_REQ_JOIN, 0, user_tag);
   builder.Finish(group_req);
 

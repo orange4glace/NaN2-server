@@ -119,14 +119,13 @@ int main(int argc, const char *argv[])
   std::cout << "Match REQ sent" << std::endl;
 
   while(1) {
-  len = read_(socket, buffer, sizeof(TCP_PACKET_HEADER));
-  std::cout << "Received  : " << len << std::endl;
-  std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
-    << std::endl;
-  std::cout << ((TCP_PACKET_HEADER*)buffer)->packet_size << std::endl;
-  len = read_(socket, buffer,
-    ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
-
+    len = read_(socket, buffer, sizeof(TCP_PACKET_HEADER));
+    std::cout << "Received  : " << len << std::endl;
+    std::cout << "Packet id : " << ((TCP_PACKET_HEADER*)buffer)->packet_id
+      << std::endl;
+    std::cout << ((TCP_PACKET_HEADER*)buffer)->packet_size << std::endl;
+    len = read_(socket, buffer,
+      ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
   }
 
 
