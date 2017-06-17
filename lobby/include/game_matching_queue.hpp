@@ -12,12 +12,7 @@
 
 #include "group.hpp"
 #include "protocol.hpp"
-
-#define MODE_NUM 1
-
-#define rating_to_tier(x) ((x)/1000)
-
-constexpr int sizes[MODE_NUM] = {6};
+#include "../../include/game_info.hpp"
 
 namespace nan2 {
 typedef mgne::pattern::ThreadJobQueue<std::shared_ptr<Group>> GroupQueue;
@@ -34,12 +29,12 @@ class MatchingQueue : public InterfaceMQ {
 public:
   void Push(int tier, const std::shared_ptr<Group>& group)
   {
-    queues_[tier][group->GetSize()].Push(group);
+    queues_[tier][group->GetSize() - 1].Push(group);
   }
 
   bool Erase(int tier, const std::shared_ptr<Group>& group)
   {
-    return queues_[tier][group->GetSize()].Erase(group);
+    return queues_[tier][group->GetSize() - 1].Erase(group);
   }
 
 private:
@@ -52,7 +47,7 @@ public:
   GameMatchingQueue(int (*game_handler)(GroupSet&, GroupSet&, GameMode))
     : game_handler_(game_handler)
   {
-    matching_queues_[0].reset(new MatchingQueue<6>());
+    matching_queues_[0].reset(new MatchingQueue<sizes[0]>());
   }
 
   bool Push(std::shared_ptr<Group>& group_ptr, GameMode mode)
@@ -121,35 +116,35 @@ public:
 
   void FindMatch()
   {
-    find_match<0, MODE_NUM>();
-    std::cout << "Finding match..!" << std::endl; 
+    std::cout << "Finding match..!!" << std::endl; 
+    find_match<0, MODE_NUM>{}(*this);
   }
  
 private:
   template <int st, int ed>
   struct find_match
   { // how about with lambda?
-    void operator()()
+    void operator()(GameMatchingQueue& gq)
     {
       if (st < ed)
       {
         std::vector<std::shared_ptr<Group>> trace;
         MatchingQueue<sizes[st]>* mqueue =
-          (MatchingQueue<sizes[st]>*)(this->matching_queues_[st].get());
+          (MatchingQueue<sizes[st]>*)(gq.matching_queues_[st].get());
 
         for (int tier = 0; tier < 3; ++tier) {
           trace.clear();
-          this->mutex_teams_[st][tier].lock();
-          this->handle_find(this->mqueue->queues_[tier].data(),
-            this->teams_[st][tier], 0, 6, trace);
+          gq.mutex_teams_[st][tier].lock();
+          gq.handle_find(mqueue->queues_[tier].data(),
+            gq.teams_[st][tier], 0, sizes[st], sizes[st], trace);
           // make game with group set
 
-          int i = this->teams_[st][tier].size() - 1;
+          int i = gq.teams_[st][tier].size() - 1;
           int j = i - 1;
-          
+             
           while (j >= 0) {
-            int result = this->game_handler_(this->teams_[st][tier][i],
-              this->teams_[st][tier][j], st);
+            int result = gq.game_handler_(gq.teams_[st][tier][i],
+              gq.teams_[st][tier][j], (GameMode)st);
             if (result == 0) {
               i = j - 1;
               j = i - 1;
@@ -160,7 +155,7 @@ private:
               j--;
             }
           }
-          this->mutex_teams_[st][tier].unlock();
+          gq.mutex_teams_[st][tier].unlock();
         }
         find_match<st+1, ed>()();
       }
@@ -174,24 +169,26 @@ private:
   };
 
   void handle_find(GroupQueue* queues, std::deque<GroupSet>& teams, int size,
-    int left, std::vector<std::shared_ptr<Group>>& trace)
+    int left, int max_size, std::vector<std::shared_ptr<Group>>& trace)
   {
     if (left == 0) {
       teams.push_front(GroupSet(trace));
       return;
     }
-
-    if (size == 6) return; // Need to change
-
+    if (size == max_size) return;
+    queues[size].Refill();
     int curr_size = queues[size].Rsize();
+    // Need to swap?
     int count = 0;
 
     for (int idx = curr_size - 1; idx >= 0; idx--) {
       if ((*queues[size].rqueue_)[idx]->GetInGroups()) continue;
+      if (left - (count + 1) * size < 0) break;
       count++;
       (*queues[size].rqueue_)[idx]->Lock();
       trace.push_back((*queues[size].rqueue_)[idx]);
-      handle_find(queues, teams, size + 1, left - idx * size, trace);
+      handle_find(queues, teams, size + 1, left - count * size,
+        max_size, trace);
     }
 
     while (count--) {
@@ -199,7 +196,7 @@ private:
       trace.pop_back();
     }
 
-    handle_find(queues, teams, size + 1, left, trace);
+    handle_find(queues, teams, size + 1, left, max_size, trace);
   }
 
   bool handle_erase(int tier, const std::shared_ptr<Group>& target, GameMode mode)

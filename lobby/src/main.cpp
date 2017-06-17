@@ -45,6 +45,7 @@ void send(int session_id, short packet_size, short packet_id,
 
 int game_handler(GroupSet& A, GroupSet& B, GameMode mode)
 {
+  std::cout << "game_handler()\n";
   bool result_try_lock_A = true;
   bool result_try_lock_B = true;
   int state = -1;
@@ -164,6 +165,7 @@ void packet_handler(mgne::Packet& p)
     if (tmp != nullptr) {
       user_list.Lock();
       std::cout << "Enter ready..! " << tmp->GetUserTag() << std::endl;
+      std::cout << "Enter id : " << tmp->GetUserId() << std::endl;
       if (user_list.Find(tmp->GetUserId()) == false) {
         state = 1;
         std::cout << "Entered: " << tmp->GetUserTag() << std::endl;

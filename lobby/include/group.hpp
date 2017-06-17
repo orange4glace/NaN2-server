@@ -10,6 +10,7 @@
 #include <mgne/pattern/thread_safe.hpp>
 
 #include "../../include/models/user.hpp"
+#include "../../include/game_info.hpp"
 #include "protocol.hpp"
 
 #define GROUP_MAX_CAPACITY 6
