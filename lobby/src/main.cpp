@@ -50,8 +50,12 @@ int game_handler(GroupSet& A, GroupSet& B, GameMode mode)
   bool result_try_lock_B = true;
   int state = -1;
 
-  for (auto& group : A) result_try_lock_A = group->TryLock();
-  for (auto& group : B) result_try_lock_B = group->TryLock();
+  for (auto& group : A) {
+    result_try_lock_A &= group->TryLock();
+  }
+  for (auto& group : B) {
+    result_try_lock_B &= group->TryLock();
+  }
 
   if (result_try_lock_A && result_try_lock_B) {
     // can take both
@@ -64,6 +68,7 @@ int game_handler(GroupSet& A, GroupSet& B, GameMode mode)
     // can't take both
     state = 3;
   }
+  std::cout << "state : " << state << std::endl;
 
   if (state == 0) {
     flatbuffers::FlatBufferBuilder builder(1024);
@@ -82,18 +87,23 @@ int game_handler(GroupSet& A, GroupSet& B, GameMode mode)
         redis_client.hset(tokens[session], "game_num",
           std::to_string(game_count));
       }
-      game_matching_queue.Erase(group, mode);
+      std::cerr << "ready\n";
+      std::cout << "Erase result : " << game_matching_queue.Erase(group, mode, true) << std::endl;
+      // TODO : Add another erase function
     }
+    std::cerr << "!?@\n";
     for (auto& group : B) {
       sessions.clear();
       group->GetSessions(sessions);
+      std::cerr << "!?\n";
       for (auto& session : sessions) {
         send(session, builder.GetSize(), PACKET_MATCH_NTF,
           (char*)builder.GetBufferPointer());
         redis_client.hset(tokens[session], "game_num",
           std::to_string(game_count));
       }
-      game_matching_queue.Erase(group, mode);
+      std::cerr << "ready\n";
+      std::cout << "Erase result : " << game_matching_queue.Erase(group, mode, true) << std::endl;
     }
     game_count++;
   }
@@ -124,7 +134,7 @@ bool out_match_queue(std::shared_ptr<Group>& group_ptr)
 {
   GameMode curr_mode = group_ptr->GetCurrMode();
   if (curr_mode == GameMode::DEFAULT) return false;
-  return game_matching_queue.Erase(group_ptr, curr_mode);
+  return game_matching_queue.Erase(group_ptr, curr_mode, false);
 }
 
 void match(const boost::system::error_code& error)
@@ -422,7 +432,7 @@ void packet_handler(mgne::Packet& p)
       }
 
       if (state == 1 &&
-        game_matching_queue.Erase(groups[session_id], mode) == true) {
+        game_matching_queue.Erase(groups[session_id], mode, false) == true) {
 
         auto match_ans = CreateMatchAns(builder, M_ANS_SUCC);
         auto match_ntf = CreateMatchNtf(builder_ntf, M_NTF_JOIN);

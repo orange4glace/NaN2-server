@@ -27,6 +27,7 @@ public:
     , curr_mode_(GameMode::DEFAULT)
   {
     rating_death_ = 0;
+    in_groups_ = false;
   }
 
   Group(Group& g1, Group& g2)
@@ -35,6 +36,8 @@ public:
   {
     members_.insert(members_.end(), g1.members_.begin(), g1.members_.end());
     members_.insert(members_.end(), g2.members_.begin(), g2.members_.end());
+    rating_death_ = g1.rating_death_ + g2.rating_death_;
+    in_groups_ = false;
   }
   ~Group() { }
 
@@ -89,6 +92,12 @@ public:
   typedef std::unordered_set<std::shared_ptr<Group>>::iterator iterator;
 
   GroupSet() { }
+
+  GroupSet(GroupSet&) = default;
+  GroupSet(GroupSet&&) = default;
+
+  GroupSet& operator=(const GroupSet&) = default;
+
   GroupSet(std::vector<std::shared_ptr<Group>>& trace)
   {
     for (auto& group : trace) {
@@ -103,14 +112,18 @@ public:
     }
   }
 
-  bool FindAndErase(const std::shared_ptr<Group>& group, GroupSet& remain)
+  bool Find(const std::shared_ptr<Group>& group)
   {
+    return groups_.find(group) != groups_.end();
+  }
+
+  bool FindAndErase(const std::shared_ptr<Group>& group, GroupSet& remain)
+  { // No need
     if (groups_.find(group) != groups_.end()) return false;
 
     groups_.erase(group);
     for (auto& group: groups_) {
       remain.groups_.insert(group);
-      // correct way?
     }
     return true;
   }

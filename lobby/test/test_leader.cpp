@@ -128,7 +128,5 @@ int main(int argc, const char *argv[])
       ((TCP_PACKET_HEADER*)buffer)->packet_size - sizeof(TCP_PACKET_HEADER));
   }
 
-
-
   return 0;
 }

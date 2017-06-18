@@ -34,7 +34,8 @@ public:
 
   bool Erase(int tier, const std::shared_ptr<Group>& group)
   {
-    return queues_[tier][group->GetSize() - 1].Erase(group);
+    queues_[tier][group->GetSize() - 1].Erase(group);
+    return true;
   }
 
 private:
@@ -75,15 +76,16 @@ public:
     return true;
   }
 
-  bool Erase(const std::shared_ptr<Group>& group_ptr, GameMode mode)
+  bool Erase(const std::shared_ptr<Group>& group_ptr, GameMode mode, 
+    bool mutex_teams)
   {
     if (mode == GameMode::DEFAULT) return false;
 
     std::lock_guard<std::mutex> lock_guard(mutex_group_set_);
     std::lock_guard<std::mutex> lock_guard2(mutex_group_sets_[mode]);
 
-    if (group_set_.find(group_ptr) != group_set_.end()) return false;
-    if (group_sets_[mode].find(group_ptr) !=
+    if (group_set_.find(group_ptr) == group_set_.end()) return false;
+    if (group_sets_[mode].find(group_ptr) ==
       group_sets_[mode].end()) return false;
 
     group_sets_[mode].erase(group_ptr);
@@ -107,9 +109,10 @@ public:
 
     ret = (matching_queues_[mode]->Erase(tier, group_ptr));
     if (!group_ptr->GetInGroups()) return ret;
-    mutex_teams_[mode][tier].lock();
+
+    if(!mutex_teams) mutex_teams_[mode][tier].lock();
     ret &= handle_erase(rating_to_tier(rating), group_ptr, mode);
-    mutex_teams_[mode][tier].unlock();
+    if(!mutex_teams) mutex_teams_[mode][tier].unlock();
 
     return ret;
   }
@@ -175,6 +178,7 @@ private:
       teams.push_front(GroupSet(trace));
       return;
     }
+
     if (size == max_size) return;
     queues[size].Refill();
     int curr_size = queues[size].Rsize();
@@ -183,11 +187,11 @@ private:
 
     for (int idx = curr_size - 1; idx >= 0; idx--) {
       if ((*queues[size].rqueue_)[idx]->GetInGroups()) continue;
-      if (left - (count + 1) * size < 0) break;
+      if (left - (count + 1) * (size + 1) < 0) break;
       count++;
       (*queues[size].rqueue_)[idx]->Lock();
       trace.push_back((*queues[size].rqueue_)[idx]);
-      handle_find(queues, teams, size + 1, left - count * size,
+      handle_find(queues, teams, size + 1, left - count * (size + 1),
         max_size, trace);
     }
 
@@ -202,13 +206,13 @@ private:
   bool handle_erase(int tier, const std::shared_ptr<Group>& target, GameMode mode)
   {
     GroupSet remain;
-    for (auto& group_set : teams_[mode][tier]) {
-      if (group_set.FindAndErase(target, remain)) {
-        for (auto& group : remain) {
-          matching_queues_[mode]->Push(tier, group);
-        }
-        return true; 
+    for(auto group_set = teams_[mode][tier].begin();
+      group_set != teams_[mode][tier].end();) {
+      if (group_set->Find(target)) {
+        teams_[mode][tier].erase(group_set);
+        return true;
       }
+      group_set++;
     }
     return false;
   }
@@ -228,3 +232,4 @@ private:
 }
 
 #endif
+
