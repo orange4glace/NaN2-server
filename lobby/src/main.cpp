@@ -380,12 +380,18 @@ void packet_handler(mgne::Packet& p)
     switch (req) {
     case M_REQ_JOIN: {
       groups[session_id]->Lock();
+      std::cout << "session_id : " << session_id << std::endl;
       if (session_id == groups[session_id]->GetLeader()) {
         state = 1; 
+        std::cout << "leader checked\n";
+      } else {
+        std::cout << "Something's wrong\n";
       }
 
       if (state == 1 && game_matching_queue.Push(groups[session_id],
         mode) == true) {
+        std::cout << groups[session_id]->GetLeader();
+        std::cout << "Match req join\n";
         auto match_ans = CreateMatchAns(builder, M_ANS_SUCC); 
         auto match_ntf = CreateMatchNtf(builder_ntf, M_NTF_JOIN);
         builder.Finish(match_ans);
