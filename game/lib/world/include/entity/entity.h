@@ -45,10 +45,11 @@ namespace nan2 {
 
     static const entity_type TYPE_BREAKABLE = 1;
     static const entity_type TYPE_DROPPED_ITEM = 2;
-    static const entity_type TYPE_MACHINE_GUN = 3;
     static const entity_type TYPE_BULLET = 4;
     static const entity_type TYPE_CHARACTER = 5;
     static const entity_type TYPE_PLAYER = 6;
+    static const entity_type TYPE_MACHINE_GUN = 100;
+    static const entity_type TYPE_RIFLE_GUN = 101;
     
     World& world();
     int internal_id() const;

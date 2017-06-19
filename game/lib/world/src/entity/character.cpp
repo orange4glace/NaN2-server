@@ -6,6 +6,7 @@
 #include "entity/player.h"
 #include "world/world_map.h"
 #include "entity/machine_gun.h"
+#include "entity/rifle_gun.h"
 
 #include "math_helper.h"
 #include "time.h"
@@ -22,10 +23,11 @@ namespace nan2 {
   const Vector2& Character::COLLIDER_SIZE() {
     return Character::COLLIDER_SIZE_;
   }
-  const float Character::SPEED_         = 115.0f;
+  const float Character::SPEED_         = 95.0f;
   const int   Character::DASH_DURATION_ = 300;
   const float Character::DASH_DISTANCE_ = 70.0f;
   const int   Character::DASH_COOLDOWN_ = 1000;
+  const int   Character::RESPAWN_TIME = 5000;
 
   Character::Character(Player* player) :
     Updatable(&(player->world()), Entity::GROUP_CHARACTER, Entity::TYPE_CHARACTER),
@@ -35,9 +37,10 @@ namespace nan2 {
     dash_cooldown_(0),
     dash_dir_(0),
     dash_time_(0),
-    dashing_(false) {
+    dashing_(false),
+    respawn_counter_(0) {
       update_order_ = 1;
-      SetWeapon(new MachineGun(world_));
+      SetWeapon(new RifleGun(world_));
       hp_ = max_hp_ = 50;
   }
 
@@ -58,6 +61,9 @@ namespace nan2 {
   void Character::Update() {
     k += 1000;
     if (k > 1000 * 60) k = 0;
+
+    AliveCheck();
+    RespawnCheck();
   }
 
   void Character::FixedUpdate() {
@@ -74,20 +80,24 @@ namespace nan2 {
       last_input_acked_packet_ = packet.sequence();
       last_input_remaining_time_ = packet.time();
 
-      if (packet.dash_dir() < 252) {
-        // Player dash command
-        Dash(packet.dash_dir());
-      }
-      if (!dashing_)
-        Move252(packet.move_dir(), fconsuming_time);
-      UpdateDashState(consuming_time);
+      // Alive check
+      if (is_alive()) {
 
-      if (is_fresh) {
-        bool fire_result = Fire(packet.fire_dir());
-        if (fire_result) {
-          int bullet_packet_time = Time::current_time() - world_->last_snapshot_sent_time();
-          BulletPacket bulletPacket(bullet_packet_time, 0, packet.fire_dir());
-          snapshot_.AddBulletPacket(bulletPacket);
+        if (packet.dash_dir() < 252) {
+          // Player dash command
+          Dash(packet.dash_dir());
+        }
+        if (!dashing_)
+          Move252(packet.move_dir(), fconsuming_time);
+        UpdateDashState(consuming_time);
+
+        if (is_fresh) {
+          bool fire_result = Fire(packet.fire_dir());
+          if (fire_result) {
+            int bullet_packet_time = Time::current_time() - world_->last_snapshot_sent_time();
+            BulletPacket bulletPacket(bullet_packet_time, 0, packet.fire_dir());
+            snapshot_.AddBulletPacket(bulletPacket);
+          }
         }
       }
 
@@ -146,6 +156,22 @@ namespace nan2 {
     dash_cooldown_ = Character::DASH_COOLDOWN_;
   }
 
+  void Character::AliveCheck() {
+    if (hp_ == 0 && respawn_counter_ == 0) 
+      respawn_counter_ = 1;
+  }
+
+  void Character::RespawnCheck() {
+    if (respawn_counter_ > 0)
+      respawn_counter_ += Time::delta_time();
+    if (respawn_counter_ >= Character::RESPAWN_TIME) {
+      // Let's respawn
+      hp_ = max_hp_;
+      respawn_counter_ = 0;
+      L_DEBUG << "Character " << player_->id() << " Respawned.";
+    }
+  }
+
   void Character::UpdateDashState(int dt) {
     DecreaseByDT(dash_cooldown_);
     if (!dashing_) return;
@@ -196,9 +222,12 @@ namespace nan2 {
       if (content->group() == Entity::GROUP_WEAPON) {
         Updatable* updatable = (Updatable*)content;
         world_->AddUpdatable(updatable);
+        Weapon* weapon = (Weapon*)updatable;
+        L_DEBUG << "obtain "<< weapon->id() << " " << weapon->type();
+        SetWeapon(weapon);
       }
       // Netcode
-      net_entities_obtained_.push(rObtainable);
+      net_entities_obtained_.push(content);
       world_->AddEntityDestroiedPacket(rObtainable);
 
       rObtainable->Destroy();
@@ -206,7 +235,7 @@ namespace nan2 {
     return nullptr;
   }
 
-  void Character::AddInput(PlayerInputPacket& plp) {
+  void Character::AddInput(const PlayerInputPacket& plp) {
     packets_.push_back(plp);
   }
 
@@ -236,9 +265,12 @@ namespace nan2 {
     hp_ = hp;
   }
 
+  bool Character::is_alive() const {
+    return hp_ > 0;
+  }
+
   void Character::SetWeapon(Weapon* weapon) {
     world_->DestroyUpdatable(weapon_);
-    if (weapon_ != nullptr) delete weapon_;
     weapon_ = weapon;
     weapon->SetCharacter(this);
     world_->AddUpdatable(weapon);

@@ -5,6 +5,8 @@
 #include "updatable.h"
 #include "character.h"
 
+#include "../network/client_snapshot_packet.h"
+
 #include <queue>
 
 namespace nan2 {
@@ -23,6 +25,9 @@ namespace nan2 {
     std::queue<PingPacket> ping_queue_;
     Character character_;
 
+    int packet_last_acked_;
+    int packets_acked_;
+
   public:
 
     Player(World* world, int id);
@@ -35,6 +40,7 @@ namespace nan2 {
 
     void PushPingPacket(int seq, int time);
     void OnPongPacketReceived(int seq);
+    void AddSnapshotPacket(ClientSnapshotPacket& client_snapshot_packet);
 
     int last_input_acked_packet() const;
 

@@ -44,6 +44,10 @@ namespace nan2 {
     return dash_dir_;
   }
 
+  const bool PlayerInputPacket::obtaining() const {
+    return obtaining_;
+  }
+
   const int PlayerInputPacket::time() const {
     return time_;
   }

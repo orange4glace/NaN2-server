@@ -31,6 +31,7 @@ namespace nan2 {
     const static int DASH_DURATION_;
     const static float DASH_DISTANCE_;
     const static int DASH_COOLDOWN_;
+    const static int RESPAWN_TIME;
 
     Player* player_;
 
@@ -43,6 +44,7 @@ namespace nan2 {
     int dash_time_;
     unsigned char dash_dir_;
     bool dashing_;
+    int respawn_counter_;
 
     Weapon* weapon_;
     std::map<int, Entity*> inventory_;
@@ -54,6 +56,8 @@ namespace nan2 {
     void SaveTickData(const CharacterTickData& tick_data);
     void UpdateDashState(int dt);
     void Dash(unsigned char dir);
+    void AliveCheck();
+    void RespawnCheck();
 
     bool AddEntityToInventory(Entity* entity);
     Entity* GetEntityFromInventory(int id);
@@ -87,7 +91,7 @@ namespace nan2 {
     void AddHP(int hp);
 
     // Network function
-    void AddInput(PlayerInputPacket& plp);
+    void AddInput(const PlayerInputPacket& plp);
 
     const Player& player() const;
     int hp() const;
@@ -95,6 +99,7 @@ namespace nan2 {
     CharacterSnapshot& snapshot();
     void hp(int hp);
     void SetWeapon(Weapon* weapon);
+    bool is_alive() const;
 
     const CharacterTickData GetInterpolatedDataAt(int time) const;
 

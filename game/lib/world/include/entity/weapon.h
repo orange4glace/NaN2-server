@@ -39,7 +39,7 @@ namespace nan2 {
 
   public:
 
-    Weapon(World* world, entity_type type, short id,
+    Weapon(World* world, entity_type type,
         int max_cooldown, int max_reload_time, int max_ammo, int max_magazine,
         const Vector2& bullet_point);
 

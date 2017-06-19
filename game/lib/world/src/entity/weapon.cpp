@@ -6,12 +6,11 @@
 
 namespace nan2 {
 
-  Weapon::Weapon(World* world, entity_type type, short id,
+  Weapon::Weapon(World* world, entity_type type,
     int max_cooldown, int max_reload_time, int max_ammo, int max_magazine,
     const Vector2& bullet_point) :
     Updatable(world, Entity::GROUP_WEAPON, type),
     character_(nullptr),
-    id_(id),
     max_cooldown_(max_cooldown),
     max_reload_time_(max_reload_time),
     max_ammo_(max_ammo),

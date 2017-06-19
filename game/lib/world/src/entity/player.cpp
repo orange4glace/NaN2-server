@@ -41,7 +41,7 @@ namespace nan2 {
   }
 
   void Player::OnPongPacketReceived(int seq) {
-    L_DEBUG << "handle " << seq;
+    L_DEBUG << "handle " << seq << " " << id_;
     while (!ping_queue_.empty()) {
       PingPacket ping_packet = ping_queue_.front();
       L_DEBUG << "chk " << ping_packet.seq;
@@ -56,6 +56,11 @@ namespace nan2 {
         ping_queue_.pop();
       }
     }
+  }
+
+  void Player::AddSnapshotPacket(ClientSnapshotPacket& client_snapshot_packet) {
+    for (int i = 0; i < client_snapshot_packet.GetPlayerInputsSize(); i ++)
+      character_.AddInput(client_snapshot_packet.GetPlayerInput(i));
   }
 
   int Player::last_input_acked_packet() const {

@@ -14,12 +14,12 @@
 
 namespace nan2 {
 
-  MachineGunBullet::MachineGunBullet(World* world, const Vector2& position, const Vector2& angle, int player_id, int collision_mask) :
+  MachineGunBullet::MachineGunBullet(World* world, const Vector2& position, const Vector2& angle, float speed, int damage, int player_id, int collision_mask) :
     Bullet(world, player_id, collision_mask),
     angle_(angle),
-    SPEED_(250.0f) {
+    SPEED_(speed) {
       position_ = position;
-      damage_ = 2;
+      damage_ = damage;
   }
 
   const AABB MachineGunBullet::collider() const {

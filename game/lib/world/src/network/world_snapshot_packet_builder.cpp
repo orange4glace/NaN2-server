@@ -47,6 +47,8 @@ namespace nan2 {
         auto offset = entity_obtained_builder.Finish();
         entities_obtained_vector.push_back(offset);
         character.net_entities_obtained_.pop();
+
+        L_DEBUG << "Player " << player.id() << " "<< " Obtained " << entity->id();
       }
       auto entities_obtained = builder.CreateVector(entities_obtained_vector);
 

@@ -4,7 +4,7 @@
 #include "logger/logger.h"
 #include "network/world_snapshot_packet_builder.h"
 #include "network/packet_parser.h"
-#include "network/player_input_packet_parser.h"
+#include "network/client_snapshot_packet_parser.h"
 #include "network/pong_packet_parser.h"
 #include "network/ping_packet_builder.h"
 
@@ -277,7 +277,7 @@ namespace nan2 {
         case PacketType::SNAPSHOT:
           break;
         case PacketType::PLAYER_INPUT:
-          ParsePlayerInputPacket(buffer_array, size, client_id);
+          ParseClientSnapshotPacket(buffer_array, size, client_id);
           break;
         default:
           break;
@@ -288,16 +288,15 @@ namespace nan2 {
     delete buffer_array;
   }
 
-  void World::ParsePlayerInputPacket(int8_t* buffer, unsigned int size, uint64_t client_id) {
-    PlayerInputPacketParser parser(buffer, size);
+  void World::ParseClientSnapshotPacket(int8_t* buffer, unsigned int size, uint64_t client_id) {
+    ClientSnapshotPacketParser parser(buffer, size);
     int player_id;
-    auto player_inputs = parser.Parse(player_id);
+    auto client_snapshot = parser.Parse(player_id);
     Player* player = GetPlayer(player_id);
     cpmap_[player_id] = client_id;
     if (player == nullptr) 
       player = AddPlayer(player_id);
-    for (auto input : player_inputs)
-      player->character().AddInput(input);
+    player->AddSnapshotPacket(client_snapshot);
   }
 
   void World::ParsePongPacket(int8_t* buffer, unsigned int size) {

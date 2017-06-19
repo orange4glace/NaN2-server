@@ -124,7 +124,7 @@ namespace nan2 {
     bool CreateObtainableAt(const Vector2& position);
 
     void OnPacketReceived(std::shared_ptr<std::vector<char>> buffer, unsigned int& size, uint64_t client_id);
-    void ParsePlayerInputPacket(int8_t* buffer, unsigned int size, uint64_t client_id);
+    void ParseClientSnapshotPacket(int8_t* buffer, unsigned int size, uint64_t client_id);
 
     void ParsePongPacket(int8_t* buffer, unsigned int size);
     void SendPingPacket();
