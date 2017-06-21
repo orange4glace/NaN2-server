@@ -15,11 +15,4 @@ const short  PACKET_MATCH_REQ        =   6;
 const short  PACKET_MATCH_ANS        =   7; 
 const short  PACKET_MATCH_NTF        =   8;
 
-namespace nan2 {
-enum GameMode {
-  DEATH,
-  DEFAULT
-};
-}
-
 #endif
