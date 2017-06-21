@@ -87,23 +87,16 @@ int game_handler(GroupSet& A, GroupSet& B, GameMode mode)
         redis_client.hset(tokens[session], "game_num",
           std::to_string(game_count));
       }
-      std::cerr << "ready\n";
-      std::cout << "Erase result : " << game_matching_queue.Erase(group, mode, true) << std::endl;
-      // TODO : Add another erase function
     }
-    std::cerr << "!?@\n";
     for (auto& group : B) {
       sessions.clear();
       group->GetSessions(sessions);
-      std::cerr << "!?\n";
       for (auto& session : sessions) {
         send(session, builder.GetSize(), PACKET_MATCH_NTF,
           (char*)builder.GetBufferPointer());
         redis_client.hset(tokens[session], "game_num",
           std::to_string(game_count));
       }
-      std::cerr << "ready\n";
-      std::cout << "Erase result : " << game_matching_queue.Erase(group, mode, true) << std::endl;
     }
     game_count++;
   }

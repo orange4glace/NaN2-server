@@ -110,9 +110,11 @@ public:
     ret = (matching_queues_[mode]->Erase(tier, group_ptr));
     if (!group_ptr->GetInGroups()) return ret;
 
-    if(!mutex_teams) mutex_teams_[mode][tier].lock();
-    ret &= handle_erase(rating_to_tier(rating), group_ptr, mode);
-    if(!mutex_teams) mutex_teams_[mode][tier].unlock();
+    if(!mutex_teams) {
+      mutex_teams_[mode][tier].lock();
+      ret &= handle_erase(rating_to_tier(rating), group_ptr, mode);
+      mutex_teams_[mode][tier].unlock();
+    }
 
     return ret;
   }
@@ -148,7 +150,16 @@ private:
           while (j >= 0) {
             int result = gq.game_handler_(gq.teams_[st][tier][i],
               gq.teams_[st][tier][j], (GameMode)st);
+
             if (result == 0) {
+              for (auto& group : gq.teams_[st][tier][i]) {
+                gq.Erase(group, (GameMode)st, true);
+              }
+              for (auto& group : gq.teams_[st][tier][j]) {
+                gq.Erase(group, (GameMode)st, true);
+              }
+              gq.teams_[st][tier].erase(gq.teams_[st][tier].begin() + i);
+              gq.teams_[st][tier].erase(gq.teams_[st][tier].begin() + j);
               i = j - 1;
               j = i - 1;
             } else if (result == 1) {
