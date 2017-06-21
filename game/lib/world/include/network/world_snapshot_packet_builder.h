@@ -16,7 +16,7 @@ namespace nan2 {
 
     WorldSnapshotPacketBuilder();
 
-    void Build(World& world);
+    int Build(World& world, Player* player);
 
   };
 

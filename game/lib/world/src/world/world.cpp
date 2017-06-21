@@ -93,7 +93,7 @@ namespace nan2 {
     if (snapshot_send_timer_ > 100) {
       snapshot_send_timer_ = 0;
       last_snapshot_sent_time_ = Time::current_time();
-      TakeSnapshot();
+      SendSnapshotToPlayers();
       SendGuaranteedPacket();
     }
     if (ping_send_timer_ >= 200) {
@@ -237,16 +237,25 @@ namespace nan2 {
 
 
   // Netcode
-  void World::TakeSnapshot() {
-    WorldSnapshotPacketBuilder packet_builder;
-    packet_builder.Build(*this);
-    OutPacket packet(packet_builder.GetBufferVector(), OutPacket::BROADCAST);
-    send_packet_queue_.push(packet);
+  void World::SendSnapshotToPlayers() {
+    for (auto player_item : players_) {
+      auto player_ = player_item.second;
+      WorldSnapshotPacketBuilder packet_builder;
+
+      int seq = packet_builder.Build(*this, player_);
+
+      OutPacket packet(seq, packet_builder.GetBufferVector(), OutPacket::UNICAST, cpmap_[player_->id()]);
+      send_packet_queue_.push(packet);
+    }
+    for (auto player_item : players_) {
+      auto player_ = player_item.second;
+      player_->character().snapshot().Clear();
+    }
   }
 
   void World::SendGuaranteedPacket() {
-    world_guaranteed_packet_builder_.Build();
-    OutPacket packet(world_guaranteed_packet_builder_.GetBufferVector(), OutPacket::BROADCAST);
+    int seq = world_guaranteed_packet_builder_.Build();
+    OutPacket packet(seq, world_guaranteed_packet_builder_.GetBufferVector(), OutPacket::BROADCAST);
     send_packet_queue_.push(packet);
     world_guaranteed_packet_builder_.Clear();
   }
@@ -312,9 +321,9 @@ namespace nan2 {
     for (auto player_item : players_) {
       PingPacketBuilder builder;
       auto player_ = player_item.second;
-      builder.Build(seq, player_->ping());
+      int packet_seq = builder.Build(seq, player_->ping());
 
-      OutPacket packet(builder.GetBufferVector(), OutPacket::UNICAST, cpmap_[player_->id()]);
+      OutPacket packet(packet_seq, builder.GetBufferVector(), OutPacket::UNICAST, cpmap_[player_->id()]);
       player_->PushPingPacket(seq, Time::current_time());
       send_packet_queue_.push(packet);
     }

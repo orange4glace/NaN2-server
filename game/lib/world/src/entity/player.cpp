@@ -8,7 +8,8 @@ namespace nan2 {
   Player::Player(World* world, int id) :
     Updatable(world, Entity::GROUP_PLAYER, Entity::TYPE_PLAYER),
     character_(this),
-    id_(id) {
+    id_(id),
+    packet_seq_(0) {
     ping_ = 0;
   }
 
@@ -61,6 +62,10 @@ namespace nan2 {
   void Player::AddSnapshotPacket(ClientSnapshotPacket& client_snapshot_packet) {
     for (int i = 0; i < client_snapshot_packet.GetPlayerInputsSize(); i ++)
       character_.AddInput(client_snapshot_packet.GetPlayerInput(i));
+  }
+
+  int Player::GetAndIncPacketSequence() {
+    return packet_seq_++;
   }
 
   int Player::last_input_acked_packet() const {

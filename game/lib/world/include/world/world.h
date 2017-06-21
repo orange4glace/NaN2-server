@@ -75,7 +75,7 @@ namespace nan2 {
     void StagingUpdatables();
     void DestroyUpdatables();
 
-    void TakeSnapshot();
+    void SendSnapshotToPlayers();
     void SendGuaranteedPacket();
 
     // Acquire usable entity id

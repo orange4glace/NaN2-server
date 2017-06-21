@@ -10,11 +10,14 @@ namespace nan2 {
     packet_type_ = PacketType::SNAPSHOT;
   }
 
-  void WorldSnapshotPacketBuilder::Build(World& world) {
+  int WorldSnapshotPacketBuilder::Build(World& world, Player* receiver) {
     if (!clean_) Clear();
     clean_ = false;
 
+    int player_packet_seq = receiver->GetAndIncPacketSequence();
+
     AppendInt(PacketType::SNAPSHOT);
+    AppendInt(player_packet_seq);
 
     flatbuffers::FlatBufferBuilder builder;
 
@@ -75,8 +78,6 @@ namespace nan2 {
       player_builder.add_character(character_offset);
       auto player_offset = player_builder.Finish();
       players_vector.push_back(player_offset);
-
-      snapshot.Clear();
     }
 
     auto players = builder.CreateVector(players_vector);
@@ -87,6 +88,9 @@ namespace nan2 {
     builder.Finish(world_offset);
 
     AppendFlatBuffer(builder);
+
+    return player_packet_seq;
   }
+
 
 }

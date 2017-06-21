@@ -18,11 +18,11 @@ namespace nan2 {
     entity_destroied_.push(EntityDestroiedPacket(entity));
   }
 
-  void WorldGuaranteedPacketBuilder::Build() {
+  int WorldGuaranteedPacketBuilder::Build() {
     if (!clean_) Clear();
     clean_ = false;
 
-    AppendInt(5);
+    AppendInt(PacketType::WORLD_GUARANTEED);
 
     flatbuffers::FlatBufferBuilder builder;
 
@@ -58,6 +58,8 @@ namespace nan2 {
     builder.Finish(world_guaranteed_offset);
 
     AppendFlatBuffer(builder);
+
+    return -1;
   }
 
   void WorldGuaranteedPacketBuilder::Clear() {
@@ -71,5 +73,5 @@ namespace nan2 {
       std::swap(entity_destroied_, tmp);
     }
   }
-
+  
 }

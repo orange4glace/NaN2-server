@@ -6,8 +6,12 @@
 #include "character.h"
 
 #include "../network/client_snapshot_packet.h"
+#include "../network/packet_state.h"
+
+#include "../network/out_packet.h"
 
 #include <queue>
+#include <deque>
 
 namespace nan2 {
 
@@ -26,7 +30,10 @@ namespace nan2 {
     Character character_;
 
     int packet_last_acked_;
-    int packets_acked_;
+    std::deque<PacketState> packet_states_;
+    std::deque<OutPacket> packet_data_;
+
+    int packet_seq_;
 
   public:
 
@@ -41,6 +48,9 @@ namespace nan2 {
     void PushPingPacket(int seq, int time);
     void OnPongPacketReceived(int seq);
     void AddSnapshotPacket(ClientSnapshotPacket& client_snapshot_packet);
+
+    void NotifySentPacket(const OutPacket& out_packet);
+    int GetAndIncPacketSequence();
 
     int last_input_acked_packet() const;
 

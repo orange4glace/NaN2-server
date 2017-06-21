@@ -13,7 +13,7 @@ namespace nan2 {
 
     PingPacketBuilder();
 
-    void Build(int seq, int ping);
+    int Build(int seq, int ping);
 
   };
 

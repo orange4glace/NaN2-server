@@ -27,7 +27,7 @@ namespace nan2 {
     void AddEntityCreated(Entity* entity);
     void AddEntityDestroied(Entity* entity);
 
-    void Build();
+    int Build();
     void Clear();
 
   };

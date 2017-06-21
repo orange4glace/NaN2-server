@@ -10,12 +10,14 @@ namespace nan2 {
     packet_type_ = PacketType::PING;
   }
 
-  void PingPacketBuilder::Build(int seq, int ping) {
+  int PingPacketBuilder::Build(int seq, int ping) {
     if (!clean_) Clear();
     clean_ = false;
     AppendInt(PacketType::PING);
     AppendInt(seq);
     AppendInt(ping);
+
+    return -1;
   }
 
 }

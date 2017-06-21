@@ -15,6 +15,7 @@ LIB_SRCS_NAKED = world_time.cpp math_helper.cpp \
 	entity/rifle_gun.cpp \
 	entity/player.cpp entity/character_tick_data.cpp \
 	entity/collider_interface.cpp \
+	network/packet_state.cpp \
 	network/client_snapshot_packet.cpp network/player_input_packet.cpp \
 	network/character_snapshot.cpp network/bullet_packet.cpp \
 	network/out_packet.cpp network/packet_builder.cpp network/world_snapshot_packet_builder.cpp network/ping_packet_builder.cpp\
