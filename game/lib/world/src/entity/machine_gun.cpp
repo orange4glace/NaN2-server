@@ -9,7 +9,7 @@ namespace nan2 {
 
   MachineGun::MachineGun(World* world) :
     Weapon(world, Entity::TYPE_MACHINE_GUN,
-      80, 1000, 30, 140,
+      80, 1000, 30, 10000,
       Vector2(29, 0))
     {
   }
@@ -20,9 +20,13 @@ namespace nan2 {
 
   bool MachineGun::Fire(unsigned char dir) {
     if (!CanFire()) return false;
+    int _dir = dir;
+    int freq = ((ammo_ * ammo_) % 5) - 4;
+    _dir = (_dir + freq + 252) % 252;
+    dir = (unsigned char)_dir;
     Vector2 bullet_position = GetBulletPoint(dir,character_->position());
     Vector2 dir_vec = MathHelper::instance().normal_dir_252(dir);
-    Bullet* bullet = new MachineGunBullet(world_, bullet_position, dir_vec, 250.0f, 2, character_->player().id(), 0);
+    Bullet* bullet = new MachineGunBullet(world_, bullet_position, dir_vec, Vector2(3, 3), 250.0f, 2, character_->player().id(), 0);
     world_->AddUpdatable(bullet);
     AfterFired();
     return true;

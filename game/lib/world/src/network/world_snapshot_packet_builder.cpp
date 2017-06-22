@@ -63,6 +63,7 @@ namespace nan2 {
       character_builder.add_dash_time(snapshot.dash_time());
       character_builder.add_dash_cooldown(snapshot.dash_cooldown());
       character_builder.add_dash_dir(snapshot.dash_dir());
+      character_builder.add_weapon_type(character.weapon()->type());
       character_builder.add_weapon_magazine(snapshot.weapon_magazine());
       character_builder.add_weapon_ammo(snapshot.weapon_ammo());
       character_builder.add_weapon_cooldown(snapshot.weapon_cooldown());

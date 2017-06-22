@@ -98,6 +98,7 @@ namespace nan2 {
     bool is_dashing() const;
     CharacterSnapshot& snapshot();
     void hp(int hp);
+    const Weapon* weapon() const;
     void SetWeapon(Weapon* weapon);
     bool is_alive() const;
 

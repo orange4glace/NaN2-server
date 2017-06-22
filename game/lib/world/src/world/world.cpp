@@ -31,7 +31,7 @@ namespace nan2 {
     for (unsigned short i = 1; i < 65535; i ++)
       entity_id_pool_.push(i);
 
-    Breakable* b = new Breakable(this, Vector2(50, 50));
+    Breakable* b = new Breakable(this, Vector2(912, 648));
     CreateEntity(b);
     AddEntityCreatedPacket(b);
   }

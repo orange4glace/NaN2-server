@@ -19,7 +19,7 @@
 
 namespace nan2 {
 
-  const Vector2 Character::COLLIDER_SIZE_ = Vector2(10, 20);
+  const Vector2 Character::COLLIDER_SIZE_ = Vector2(8, 18);
   const Vector2& Character::COLLIDER_SIZE() {
     return Character::COLLIDER_SIZE_;
   }
@@ -39,6 +39,7 @@ namespace nan2 {
     dash_time_(0),
     dashing_(false),
     respawn_counter_(0) {
+      position_ = Vector2(1000, 500);
       update_order_ = 1;
       SetWeapon(new RifleGun(world_));
       hp_ = max_hp_ = 50;
@@ -224,7 +225,9 @@ namespace nan2 {
         world_->AddUpdatable(updatable);
         Weapon* weapon = (Weapon*)updatable;
         L_DEBUG << "obtain "<< weapon->id() << " " << weapon->type();
-        SetWeapon(weapon);
+
+        if (weapon->type() != weapon_->type())
+          SetWeapon(weapon);
       }
       // Netcode
       net_entities_obtained_.push(content);
@@ -267,6 +270,10 @@ namespace nan2 {
 
   bool Character::is_alive() const {
     return hp_ > 0;
+  }
+
+  const Weapon* Character::weapon() const {
+    return weapon_;
   }
 
   void Character::SetWeapon(Weapon* weapon) {

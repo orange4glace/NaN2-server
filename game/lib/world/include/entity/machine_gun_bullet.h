@@ -13,10 +13,11 @@ namespace nan2 {
 
     Vector2 angle_;
     float SPEED_;
+    Vector2 size_;
 
   public:
 
-    MachineGunBullet(World* world, const Vector2& position, const Vector2& angle, float speed, int damage, int player_id, int collision_mask);
+    MachineGunBullet(World* world, const Vector2& position, const Vector2& angle, const Vector2& size, float speed, int damage, int player_id, int collision_mask);
 
     virtual const AABB collider() const;
 
