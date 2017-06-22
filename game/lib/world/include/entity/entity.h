@@ -50,6 +50,7 @@ namespace nan2 {
     static const entity_type TYPE_PLAYER = 6;
     static const entity_type TYPE_MACHINE_GUN = 100;
     static const entity_type TYPE_RIFLE_GUN = 101;
+    static const entity_type TYPE_SHOT_GUN = 102;
     
     World& world();
     int internal_id() const;

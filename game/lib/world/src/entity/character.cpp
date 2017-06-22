@@ -7,6 +7,7 @@
 #include "world/world_map.h"
 #include "entity/machine_gun.h"
 #include "entity/rifle_gun.h"
+#include "entity/shot_gun.h"
 
 #include "math_helper.h"
 #include "time.h"
@@ -41,7 +42,7 @@ namespace nan2 {
     respawn_counter_(0) {
       position_ = Vector2(1000, 500);
       update_order_ = 1;
-      SetWeapon(new RifleGun(world_));
+      SetWeapon(new ShotGun(world_));
       hp_ = max_hp_ = 50;
   }
 

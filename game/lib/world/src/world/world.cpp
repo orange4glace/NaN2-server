@@ -14,8 +14,12 @@
 #include <cassert>
 #include <algorithm>
 
+#include <stdlib.h>
+#include <time.h>
+
 #include "entity/breakable.h"
 #include "entity/machine_gun.h"
+#include "entity/rifle_gun.h"
 
 namespace nan2 {
 
@@ -30,10 +34,11 @@ namespace nan2 {
     // Fill entity id pool
     for (unsigned short i = 1; i < 65535; i ++)
       entity_id_pool_.push(i);
-
+    /*
     Breakable* b = new Breakable(this, Vector2(912, 648));
     CreateEntity(b);
     AddEntityCreatedPacket(b);
+    */
   }
 
   World::World(WorldMap* world_map) : 
@@ -61,6 +66,8 @@ namespace nan2 {
 
     int current_fixed_time = Time::current_time();
     Time::current_time(Time::current_time() + dt);
+
+    CreateObtainableAt(Vector2::ZERO);
 
     StagingUpdatables();
 
@@ -186,19 +193,43 @@ namespace nan2 {
     
   }
 
+  static int ttimer = 7320;
+  static int rx;
+  static int ry;
   bool World::CreateObtainableAt(const Vector2& position) {
-    MachineGun* machine_gun = new MachineGun(this);
-    if (!CreateEntity(machine_gun)) {
-      delete machine_gun;
-      return false;
+    ttimer -= Time::delta_time();
+    srand(time(NULL));
+    if (ttimer % 2) rx = rand() % 550 + 850;
+    else ry = rand() % 500 + 550;
+    if (ttimer < 0) {
+      Weapon* weapon;
+      int typ = (-ttimer) % 2;
+      if (typ == 0) {
+        MachineGun* machine_gun = new MachineGun(this);
+        weapon = (Weapon*)machine_gun;
+      }
+      else if (typ == 1) {
+        RifleGun* rifle_gun = new RifleGun(this);
+        weapon = (Weapon*)rifle_gun;
+      }
+      else {
+
+      }
+      if (!CreateEntity(weapon)) {
+        delete weapon;
+        return false;
+      }
+      Obtainable* item = new Obtainable(this, weapon, Vector2(rx, ry));
+      L_DEBUG << "create obtainable " << Vector2(rx, ry) << " " << typ;
+      if (!CreateEntity(item)) {
+        delete item;
+        return false;
+      }
+      AddEntityCreatedPacket(item);
+      ttimer = rand() % 1000 + 7000;
+      return true;
     }
-    Obtainable* item = new Obtainable(this, machine_gun, position);
-    if (!CreateEntity(item)) {
-      delete item;
-      return false;
-    }
-    AddEntityCreatedPacket(item);
-    return true;
+    return false;
   }
 
   bool World::CreateEntity(Entity* entity) {

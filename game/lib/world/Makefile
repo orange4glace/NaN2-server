@@ -11,8 +11,10 @@ TARGET_PATH = test
 LIB_SRCS_NAKED = world_time.cpp math_helper.cpp \
 	entity/entity.cpp entity/updatable.cpp entity/breakable.cpp entity/obtainable.cpp entity/bullet.cpp entity/character.cpp \
 	entity/weapon.cpp \
-	entity/machine_gun.cpp entity/machine_gun_bullet.cpp \
+	entity/machine_gun.cpp \
 	entity/rifle_gun.cpp \
+	entity/shot_gun.cpp \
+	entity/machine_gun_bullet.cpp \
 	entity/player.cpp entity/character_tick_data.cpp \
 	entity/collider_interface.cpp \
 	network/packet_state.cpp \
