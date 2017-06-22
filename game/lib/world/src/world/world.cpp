@@ -67,6 +67,8 @@ namespace nan2 {
     int current_fixed_time = Time::current_time();
     Time::current_time(Time::current_time() + dt);
 
+    L_DEBUG << "== Delta time = " << dt;
+
     CreateObtainableAt(Vector2::ZERO);
 
     StagingUpdatables();
