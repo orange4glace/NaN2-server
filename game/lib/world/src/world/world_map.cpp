@@ -16,6 +16,12 @@ namespace nan2 {
     aabb_list_.push_back(AABB(Rect(976, 944, 64, 128)));
     aabb_list_.push_back(AABB(Rect(1136, 1120, 576, 32)));
     aabb_list_.push_back(AABB(Rect(1344, 1000, 32, 48)));
+    aabb_list_.push_back(AABB(Rect(1328, 712, 192, 48)));
+    aabb_list_.push_back(AABB(Rect(1392, 680, 192, 48)));
+    aabb_list_.push_back(AABB(Rect(1008, 648, 192, 48)));
+    aabb_list_.push_back(AABB(Rect(1184, 808, 32, 48)));
+    aabb_list_.push_back(AABB(Rect(1056, 744, 32, 48)));
+    aabb_list_.push_back(AABB(Rect(1248, 584, 32, 48)));
   }
 
   const std::vector<AABB>& WorldMap::GetStaticAABBTileColliders() const {

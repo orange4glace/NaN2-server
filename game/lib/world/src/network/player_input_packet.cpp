@@ -5,12 +5,14 @@
 
 namespace nan2 {
 
-  PlayerInputPacket::PlayerInputPacket(unsigned int sequence, int time, unsigned char move_dir, unsigned char fire_dir, unsigned char dash_dir) :
+  PlayerInputPacket::PlayerInputPacket(unsigned int sequence, int time, unsigned char move_dir, unsigned char fire_dir,
+    unsigned char dash_dir, unsigned char view_dir) :
   sequence_(sequence),
   time_(time),
   move_dir_(move_dir),
   fire_dir_(fire_dir),
-  dash_dir_(dash_dir) {   
+  dash_dir_(dash_dir),
+  view_dir_(view_dir) {   
   }
 
   int PlayerInputPacket::Consume(int time) {
@@ -42,6 +44,10 @@ namespace nan2 {
 
   const unsigned char PlayerInputPacket::dash_dir() const {
     return dash_dir_;
+  }
+
+  const unsigned char PlayerInputPacket::view_dir() const {
+    return view_dir_;
   }
 
   const bool PlayerInputPacket::obtaining() const {

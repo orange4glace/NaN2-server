@@ -12,13 +12,14 @@ namespace nan2 {
     unsigned char move_dir_;
     unsigned char fire_dir_;
     unsigned char dash_dir_;
+    unsigned char view_dir_;
     bool obtaining_;
     char extra_command_;
     int time_;
 
   public:
 
-    PlayerInputPacket(unsigned int sequence, int time, unsigned char move_dir, unsigned char fire_dir, unsigned char dash_dir);
+    PlayerInputPacket(unsigned int sequence, int time, unsigned char move_dir, unsigned char fire_dir, unsigned char dash_dir, unsigned char view_dir);
 
     int Consume(int time);
 
@@ -26,6 +27,7 @@ namespace nan2 {
     const unsigned char move_dir() const;
     const unsigned char fire_dir() const;
     const unsigned char dash_dir() const;
+    const unsigned char view_dir() const;
     const bool obtaining() const;
     const int time() const;
     const bool is_consuming() const;

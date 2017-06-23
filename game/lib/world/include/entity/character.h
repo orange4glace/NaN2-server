@@ -69,6 +69,7 @@ namespace nan2 {
   public:
 
     // tmp
+    unsigned char view_dir_;
     unsigned int last_input_acked_packet_;
     unsigned int last_input_remaining_time_;
     std::queue<Entity*> net_entities_obtained_;

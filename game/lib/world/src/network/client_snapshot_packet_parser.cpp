@@ -26,7 +26,8 @@ namespace nan2 {
     auto player_inputs_vector = player_inputs->inputs();
     for (int i = 0; i < player_inputs_vector->Length(); i ++) {
       auto player_input = player_inputs_vector->Get(i);
-      PlayerInputPacket input(player_input->sequence(), player_input->time(), player_input->move_dir(), player_input->fire_dir(), player_input->dash_dir());
+      PlayerInputPacket input(player_input->sequence(), player_input->time(), player_input->move_dir(),
+        player_input->fire_dir(), player_input->dash_dir(), player_input->view_dir());
       ret.AddPlayerInput(input);
     }
     return ret;

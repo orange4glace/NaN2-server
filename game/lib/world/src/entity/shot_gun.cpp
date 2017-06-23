@@ -22,10 +22,10 @@ namespace nan2 {
     if (!CanFire()) return false;
     int freqA = ammo_;
     for (int i = 0; i < 5; i ++) {
-      freqA *= ammo_;
-      freqA %= 8529385;
+      freqA *= ammo_ *131071;
+      freqA %= 524287;
       int dir_ = dir;
-      int freq = (freqA % 11) - 5;
+      int freq = (freqA % 5) - 2;
       dir_ += freq;
       dir_ = (dir_ + 252) % 252;
       dir = (unsigned char)dir_;

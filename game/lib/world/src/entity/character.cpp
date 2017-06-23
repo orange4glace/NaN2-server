@@ -18,6 +18,9 @@
 #include <utility>
 #include <algorithm>
 
+#include <stdlib.h>
+#include <time.h>
+
 namespace nan2 {
 
   const Vector2 Character::COLLIDER_SIZE_ = Vector2(8, 18);
@@ -40,7 +43,11 @@ namespace nan2 {
     dash_time_(0),
     dashing_(false),
     respawn_counter_(0) {
-      position_ = Vector2(1000, 500);
+      srand(time(NULL));
+      int sed = rand() % 100;
+      int x = (sed * 131071) % 550 + 850;
+      int y = (sed * 524287) % 500 + 550;
+      position_ = Vector2(x, y);
       update_order_ = 1;
       SetWeapon(new ShotGun(world_));
       hp_ = max_hp_ = 50;
@@ -81,6 +88,9 @@ namespace nan2 {
 
       last_input_acked_packet_ = packet.sequence();
       last_input_remaining_time_ = packet.time();
+
+      // tmp
+      view_dir_ = packet.view_dir();
 
       // Alive check
       if (is_alive()) {
@@ -170,7 +180,12 @@ namespace nan2 {
       // Let's respawn
       hp_ = max_hp_;
       respawn_counter_ = 0;
-      L_DEBUG << "Character " << player_->id() << " Respawned.";
+      srand(time(NULL));
+      int sed = rand() % 100;
+      int x = (sed * 131071) % 550 + 850;
+      int y = (sed * 524287) % 500 + 550;
+      MoveTo(x, y);
+      L_DEBUG << "Character " << player_->id() << " Respawned. "<< x <<" " << y;
     }
   }
 

@@ -24,12 +24,13 @@ struct Character FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_DASH_TIME = 10,
     VT_DASH_COOLDOWN = 12,
     VT_DASH_DIR = 14,
-    VT_WEAPON_TYPE = 16,
-    VT_WEAPON_MAGAZINE = 18,
-    VT_WEAPON_AMMO = 20,
-    VT_WEAPON_COOLDOWN = 22,
-    VT_WEAPON_RELOAD_TIME = 24,
-    VT_ENTITIES_OBTAINED = 26
+    VT_VIEW_DIR = 16,
+    VT_WEAPON_TYPE = 18,
+    VT_WEAPON_MAGAZINE = 20,
+    VT_WEAPON_AMMO = 22,
+    VT_WEAPON_COOLDOWN = 24,
+    VT_WEAPON_RELOAD_TIME = 26,
+    VT_ENTITIES_OBTAINED = 28
   };
   const nan2::game::world::Vec2 *pos() const {
     return GetStruct<const nan2::game::world::Vec2 *>(VT_POS);
@@ -48,6 +49,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   uint8_t dash_dir() const {
     return GetField<uint8_t>(VT_DASH_DIR, 0);
+  }
+  uint8_t view_dir() const {
+    return GetField<uint8_t>(VT_VIEW_DIR, 0);
   }
   uint8_t weapon_type() const {
     return GetField<uint8_t>(VT_WEAPON_TYPE, 0);
@@ -77,6 +81,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyField<int32_t>(verifier, VT_DASH_TIME) &&
            VerifyField<int32_t>(verifier, VT_DASH_COOLDOWN) &&
            VerifyField<uint8_t>(verifier, VT_DASH_DIR) &&
+           VerifyField<uint8_t>(verifier, VT_VIEW_DIR) &&
            VerifyField<uint8_t>(verifier, VT_WEAPON_TYPE) &&
            VerifyField<int32_t>(verifier, VT_WEAPON_MAGAZINE) &&
            VerifyField<int32_t>(verifier, VT_WEAPON_AMMO) &&
@@ -110,6 +115,9 @@ struct CharacterBuilder {
   void add_dash_dir(uint8_t dash_dir) {
     fbb_.AddElement<uint8_t>(Character::VT_DASH_DIR, dash_dir, 0);
   }
+  void add_view_dir(uint8_t view_dir) {
+    fbb_.AddElement<uint8_t>(Character::VT_VIEW_DIR, view_dir, 0);
+  }
   void add_weapon_type(uint8_t weapon_type) {
     fbb_.AddElement<uint8_t>(Character::VT_WEAPON_TYPE, weapon_type, 0);
   }
@@ -134,7 +142,7 @@ struct CharacterBuilder {
   }
   CharacterBuilder &operator=(const CharacterBuilder &);
   flatbuffers::Offset<Character> Finish() {
-    const auto end = fbb_.EndTable(start_, 12);
+    const auto end = fbb_.EndTable(start_, 13);
     auto o = flatbuffers::Offset<Character>(end);
     return o;
   }
@@ -148,6 +156,7 @@ inline flatbuffers::Offset<Character> CreateCharacter(
     int32_t dash_time = 0,
     int32_t dash_cooldown = 0,
     uint8_t dash_dir = 0,
+    uint8_t view_dir = 0,
     uint8_t weapon_type = 0,
     int32_t weapon_magazine = 0,
     int32_t weapon_ammo = 0,
@@ -166,6 +175,7 @@ inline flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_hp(hp);
   builder_.add_pos(pos);
   builder_.add_weapon_type(weapon_type);
+  builder_.add_view_dir(view_dir);
   builder_.add_dash_dir(dash_dir);
   return builder_.Finish();
 }
@@ -178,6 +188,7 @@ inline flatbuffers::Offset<Character> CreateCharacterDirect(
     int32_t dash_time = 0,
     int32_t dash_cooldown = 0,
     uint8_t dash_dir = 0,
+    uint8_t view_dir = 0,
     uint8_t weapon_type = 0,
     int32_t weapon_magazine = 0,
     int32_t weapon_ammo = 0,
@@ -192,6 +203,7 @@ inline flatbuffers::Offset<Character> CreateCharacterDirect(
       dash_time,
       dash_cooldown,
       dash_dir,
+      view_dir,
       weapon_type,
       weapon_magazine,
       weapon_ammo,
