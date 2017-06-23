@@ -292,8 +292,12 @@ namespace nan2 {
 
   void World::SendGuaranteedPacket() {
     int seq = world_guaranteed_packet_builder_.Build();
-    OutPacket packet(seq, world_guaranteed_packet_builder_.GetBufferVector(), OutPacket::BROADCAST);
-    send_packet_queue_.push(packet);
+    for (auto player_item : players_) {
+      auto player_ = player_item.second;
+
+      OutPacket packet(seq, world_guaranteed_packet_builder_.GetBufferVector(), OutPacket::UNICAST, cpmap_[player_->id()]);
+      send_packet_queue_.push(packet);
+    }
     world_guaranteed_packet_builder_.Clear();
   }
 
