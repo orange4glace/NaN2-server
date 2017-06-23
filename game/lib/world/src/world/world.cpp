@@ -20,6 +20,7 @@
 #include "entity/breakable.h"
 #include "entity/machine_gun.h"
 #include "entity/rifle_gun.h"
+#include "entity/shot_gun.h"
 
 namespace nan2 {
 
@@ -66,8 +67,6 @@ namespace nan2 {
 
     int current_fixed_time = Time::current_time();
     Time::current_time(Time::current_time() + dt);
-
-    L_DEBUG << "== Delta time = " << dt;
 
     CreateObtainableAt(Vector2::ZERO);
 
@@ -205,24 +204,29 @@ namespace nan2 {
     else ry = rand() % 500 + 550;
     if (ttimer < 0) {
       Weapon* weapon;
-      int typ = (-ttimer) % 2;
+      entity_type type;
+      int typ = ((-ttimer) * 131071) % 3;
       if (typ == 0) {
         MachineGun* machine_gun = new MachineGun(this);
+        type = Entity::TYPE_MACHINE_GUN_OBTAINABLE;
         weapon = (Weapon*)machine_gun;
       }
       else if (typ == 1) {
         RifleGun* rifle_gun = new RifleGun(this);
+        type = Entity::TYPE_RIFLE_GUN_OBTAINABLE;
         weapon = (Weapon*)rifle_gun;
       }
       else {
-
+        ShotGun* shot_gun = new ShotGun(this);
+        type = Entity::TYPE_SHOT_GUN_OBTAINABLE;
+        weapon = (Weapon*)shot_gun;
       }
       if (!CreateEntity(weapon)) {
         delete weapon;
         return false;
       }
-      Obtainable* item = new Obtainable(this, weapon, Vector2(rx, ry));
-      L_DEBUG << "create obtainable " << Vector2(rx, ry) << " " << typ;
+      Obtainable* item = new Obtainable(this, type, weapon, Vector2(rx, ry));
+      L_DEBUG << "create obtainable " << Vector2(rx, ry) << " " << (int)typ << " " << (int)type;
       if (!CreateEntity(item)) {
         delete item;
         return false;

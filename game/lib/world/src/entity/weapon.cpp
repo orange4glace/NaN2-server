@@ -4,6 +4,8 @@
 #include "entity/character.h"
 #include "math_helper.h"
 
+#include "logger/logger.h"
+
 namespace nan2 {
 
   Weapon::Weapon(World* world, entity_type type,
@@ -59,11 +61,11 @@ namespace nan2 {
     MathHelper::instance().normal_dir_252(dir);
     Vector2 arm_anchor = position + Vector2(3.0f * (view_right ? -1 : 1), -2);
     float rad = MathHelper::instance().DegToRad(MathHelper::instance().normal_angle_252(dir));
-    float arm_length = 5.0f;
-    Vector2 quant = MathHelper::instance().normal_dir_252(dir);
-    Vector2 arm_vector = quant * arm_length;
+    Vector2 arm_vector = MathHelper::instance().RotateVector2(Vector2(5, -0.5f), rad);
     Vector2 weapon_attacher_anchor = arm_anchor + arm_vector;
     Vector2 bullet_point = MathHelper::instance().RotateVector2(bullet_point_, rad) + weapon_attacher_anchor;
+    L_DEBUG << position << " " << bullet_point << " " << weapon_attacher_anchor;
+    L_DEBUG << arm_anchor << " " << arm_vector;
     return bullet_point;
   }
 

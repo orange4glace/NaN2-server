@@ -17,7 +17,7 @@ namespace nan2 {
 
   public:
 
-    Obtainable(World* world, Entity* content, const Vector2& position);
+    Obtainable(World* world, entity_type type, Entity* content, const Vector2& position);
     ~Obtainable();
 
     Entity* content();

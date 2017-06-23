@@ -48,6 +48,9 @@ namespace nan2 {
     static const entity_type TYPE_BULLET = 4;
     static const entity_type TYPE_CHARACTER = 5;
     static const entity_type TYPE_PLAYER = 6;
+    static const entity_type TYPE_MACHINE_GUN_OBTAINABLE = 50;
+    static const entity_type TYPE_RIFLE_GUN_OBTAINABLE = 51;
+    static const entity_type TYPE_SHOT_GUN_OBTAINABLE = 52;
     static const entity_type TYPE_MACHINE_GUN = 100;
     static const entity_type TYPE_RIFLE_GUN = 101;
     static const entity_type TYPE_SHOT_GUN = 102;

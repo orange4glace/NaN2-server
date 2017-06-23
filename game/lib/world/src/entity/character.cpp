@@ -240,9 +240,6 @@ namespace nan2 {
   }
 
   void Character::AddInput(const PlayerInputPacket& plp) {
-    // #### DEBUG
-    if (player_->id() == 3321)
-      L_DEBUG << "# Seq " << plp.sequence();
     packets_.push_back(plp);
   }
 
